@@ -89,12 +89,12 @@ html, body {
    Reserve the rightmost 220 px of every slide for the character.
    box-sizing: border-box means the 1280 px width stays fixed and
    all child flex / grid layouts simply shrink their usable width. */
-.slide { padding-right: 220px; box-sizing: border-box; }
+.slide { padding-right: 310px; box-sizing: border-box; }
 
 /* ── 3-D Presenter canvas ──────────────────────────────────── */
 #char-canvas {
   position: absolute; bottom: 0; right: 16px;
-  width: 200px; height: 340px;
+  width: 280px; height: 480px;
   pointer-events: none; z-index: 20;
 }
 
@@ -1404,9 +1404,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /* ── Constants ───────────────────────────────────────────── */
-const CW = 200, CH = 340;   // canvas px — extra height gives generous head room
+const CW = 280, CH = 480;   // canvas px — generous size for full-body visibility
 const STAGE_W = 1280, STAGE_H = 720, CANVAS_RIGHT = 16;
-const CHAR_SCALE = 1.1;
+const CHAR_SCALE = 1.65;
 const FLOOR_Y    = -0.9;
 const BUBBLE_DURATION = 10000;  // 10 s
 
