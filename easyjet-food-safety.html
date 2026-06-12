@@ -1022,6 +1022,45 @@ html, body {
 /* ── Bact table row hover ─────────────────────────────────── */
 .bact-table tbody tr { cursor: pointer; transition: background .15s; }
 .bact-table tbody tr:hover td { background: rgba(255,102,0,0.07); }
+
+/* ── Click-to-begin overlay ──────────────────────────────── */
+#begin-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.78);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: opacity .4s ease;
+}
+#begin-overlay.hidden { opacity: 0; pointer-events: none; }
+.begin-logo {
+  background: var(--orange); color: var(--white);
+  font-size: 16px; font-weight: 800; padding: 6px 14px;
+  border-radius: 4px; margin-bottom: 24px;
+  letter-spacing: -0.01em;
+}
+.begin-title {
+  font-size: 32px; font-weight: 900; color: var(--white);
+  letter-spacing: -0.02em; margin-bottom: 8px;
+}
+.begin-sub {
+  font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.5);
+  margin-bottom: 40px;
+}
+.begin-btn {
+  background: var(--orange); color: var(--white);
+  font-family: var(--font); font-size: 16px; font-weight: 800;
+  border: none; border-radius: 6px; padding: 15px 40px;
+  cursor: pointer; letter-spacing: 0.02em;
+  box-shadow: 0 4px 24px rgba(255,102,0,0.45);
+  transition: transform .15s, box-shadow .15s;
+}
+.begin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,102,0,0.55); }
+.begin-loading {
+  margin-top: 18px; font-size: 12px; font-weight: 600;
+  color: rgba(255,255,255,0.35); letter-spacing: 0.06em;
+  min-height: 18px; text-transform: uppercase;
+}
 </style>
 </head>
 <body>
@@ -1689,6 +1728,15 @@ html, body {
 </div><!-- /deck -->
 </div><!-- /wrapper -->
 
+<!-- Click-to-begin overlay -->
+<div id="begin-overlay">
+  <div class="begin-logo">easyJet</div>
+  <div class="begin-title">Food Safety Training</div>
+  <div class="begin-sub">Airline Safety &amp; Ground Operations</div>
+  <button class="begin-btn">▶ Begin Training</button>
+  <div class="begin-loading" id="begin-loading"></div>
+</div>
+
 <div class="nav">
   <button id="btn-prev" onclick="navigate(-1)" disabled>← Prev</button>
   <span class="counter" id="counter">1 / 12</span>
@@ -1725,6 +1773,20 @@ html, body {
   });
 
   // Temperature slider handled by module script
+
+  // Begin overlay — user gesture required for audio autoplay
+  const overlay = document.getElementById('begin-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      overlay.classList.add('hidden');
+      setTimeout(() => { overlay.style.display = 'none'; }, 450);
+      // Trigger first narration via the module's presenter function
+      if (window.presenterGoToSlide) {
+        const idx = window._pendingSlideIdx != null ? window._pendingSlideIdx : 0;
+        window.presenterGoToSlide(idx);
+      }
+    });
+  }
 </script>
 
 <script type="importmap">
@@ -1739,6 +1801,7 @@ html, body {
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from './config.js';
 
 /* ── Constants ───────────────────────────────────────────── */
 const CW = 280, CH = 480;   // canvas px — generous size for full-body visibility
@@ -1837,44 +1900,100 @@ loader.load('./character_animated.glb', (gltf) => {
   // Trigger narration for the slide that's already active
   const activeSl = document.querySelector('.slide.active');
   const idx = activeSl ? Array.from(document.querySelectorAll('.slide')).indexOf(activeSl) : 0;
-  const n0 = NARRATIONS[idx];
-  if (n0) setTimeout(() => speak(n0.text, n0.hint), 800);
+  // Wait for user gesture (begin overlay) before speaking
+  window._pendingSlideIdx = idx;
 });
 
-/* ── Speak helper — two-phase: narration → hint → hide ──── */
-function speak(text, hint) {
+/* ── ElevenLabs TTS ──────────────────────────────────────── */
+const ELEVENLABS_MODEL    = 'eleven_multilingual_v2';
+const ELEVENLABS_ENDPOINT = 'https://api.elevenlabs.io/v1/text-to-speech';
+const audioCacheUrls = new Array(NARRATIONS.length).fill(null);
+let currentAudio = null;
+
+async function generateSpeech(text) {
+  const res = await fetch(`${ELEVENLABS_ENDPOINT}/${ELEVENLABS_VOICE_ID}`, {
+    method: 'POST',
+    headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text,
+      model_id: ELEVENLABS_MODEL,
+      voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+    })
+  });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status}`);
+  return URL.createObjectURL(await res.blob());
+}
+
+// Pre-generate all clips sequentially in the background
+(async () => {
+  const loadEl = document.getElementById('begin-loading');
+  for (let i = 0; i < NARRATIONS.length; i++) {
+    if (loadEl) loadEl.textContent = `Preparing voice… ${i + 1} / ${NARRATIONS.length}`;
+    try {
+      audioCacheUrls[i] = await generateSpeech(NARRATIONS[i].text);
+    } catch (e) {
+      console.warn(`Audio clip ${i} failed:`, e);
+    }
+    await new Promise(r => setTimeout(r, 300));
+  }
+  if (loadEl) loadEl.textContent = 'Voice ready ✓';
+})();
+
+function stopAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+}
+
+/* ── Speak — audio-synced with two-phase bubble ──────────── */
+function speak(text, hint, slideIndex) {
   if (!text) return;
   if (tTo) clearTimeout(tTo);
+  stopAudio();
   talking = true;
   if (mixer && talk) xfade(talk);
   bub.textContent = text;
   bub.classList.add('vis');
   updateBubble();
-  if (hint) {
-    tTo = setTimeout(() => {
+
+  function afterNarration() {
+    if (hint) {
       bub.textContent = hint;
       updateBubble();
       if (mixer && idle) xfade(idle);
       talking = false;
       tTo = setTimeout(() => { bub.classList.remove('vis'); }, BUBBLE_DURATION);
-    }, BUBBLE_DURATION);
-  } else {
-    tTo = setTimeout(() => {
+    } else {
       bub.classList.remove('vis');
       talking = false;
       if (mixer && idle) xfade(idle);
-    }, BUBBLE_DURATION);
+    }
+  }
+
+  const url = (slideIndex != null) ? audioCacheUrls[slideIndex] : null;
+  if (url) {
+    const audio = new Audio(url);
+    audio.volume = 1.0;
+    currentAudio = audio;
+    audio.addEventListener('ended', () => { currentAudio = null; afterNarration(); });
+    audio.addEventListener('error', () => { currentAudio = null; tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
+    audio.play().catch(() => { tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
+  } else {
+    tTo = setTimeout(afterNarration, BUBBLE_DURATION);
   }
 }
 
 /* ── Slide trigger (called by navigation script) ─────────── */
 window.presenterGoToSlide = function(i) {
   if (tTo) clearTimeout(tTo);
+  stopAudio();
   bub.classList.remove('vis');
   talking = false;
   if (mixer && idle) xfade(idle);
   const n = NARRATIONS[i];
-  if (n) setTimeout(() => speak(n.text, n.hint), 350);
+  if (n) setTimeout(() => speak(n.text, n.hint, i), 350);
 };
 
 /* ── Position bubble — slightly closer & lower ───────────── */
