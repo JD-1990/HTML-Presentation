@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Safety Learning Module</title>
+  <link rel="stylesheet" href="./presenter.css">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module" src="./presenter.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════ SLIDE AREA ═══════════════ -->
+<div id="slide-area">
+
+  <!-- SLIDE 0 — Cover -->
+  <div class="slide active" data-index="0">
+    <p class="cover-sub" style="color:#00A89D;font-size:0.8rem;margin-bottom:6px;">AIRLINE SAFETY &amp; GROUND OPERATIONS</p>
+    <h1 class="cover-title">Food Safety<br>Learning Module</h1>
+    <p class="cover-sub">Your guide to keeping every passenger safe</p>
+    <div class="module-list">
+      <div class="module-item"><span class="module-num">01</span>Causes of Food Poisoning</div>
+      <div class="module-item"><span class="module-num">02</span>Meet the Enemy — Bacteria</div>
+      <div class="module-item"><span class="module-num">03</span>FATTOM Framework</div>
+      <div class="module-item"><span class="module-num">04</span>High Risk Foods</div>
+      <div class="module-item"><span class="module-num">05</span>Cross Contamination</div>
+      <div class="module-item"><span class="module-num">06</span>Personal Hygiene</div>
+      <div class="module-item"><span class="module-num">07</span>Temperature Control</div>
+      <div class="module-item"><span class="module-num">08</span>Unfit Food &amp; Reporting</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 1 — Causes of Food Poisoning -->
+  <div class="slide" data-index="1">
+    <h2>Causes of Food Poisoning</h2>
+    <div class="card-grid card-grid-3" style="flex:1;">
+      <div class="card">
+        <div class="card-title">🦠 Bacteria &amp; Toxins</div>
+        <div class="card-sub">The most common cause. Multiplies rapidly in warm, moist food environments.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔬 Viruses</div>
+        <div class="card-sub">Norovirus and Hepatitis A can survive on surfaces and spread via touch.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚗️ Chemicals</div>
+        <div class="card-sub">Cleaning products, pesticides or improper packaging contaminating food.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🍄 Natural Toxins</div>
+        <div class="card-sub">Found in certain mushrooms, shellfish and improperly stored starchy foods.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🙌 Poor Hygiene</div>
+        <div class="card-sub">Unwashed hands, sneezing over food or working while ill transfers pathogens.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌡️ Wrong Temperature</div>
+        <div class="card-sub">Leaving food in the Danger Zone (5–63°C) allows bacteria to multiply fast.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — Meet the Enemy -->
+  <div class="slide" data-index="2">
+    <h2>Meet the Enemy — Key Bacteria</h2>
+    <div class="card-grid card-grid-3" style="flex:1;">
+      <div class="card dark">
+        <div class="card-title">Salmonella</div>
+        <div class="card-sub"><strong>Found in:</strong> Raw poultry, eggs, dairy<br><strong>Symptoms:</strong> Diarrhoea, vomiting, fever<br><strong>Onset:</strong> 6–72 hours</div>
+      </div>
+      <div class="card dark">
+        <div class="card-title">Listeria</div>
+        <div class="card-sub"><strong>Found in:</strong> Soft cheese, deli meats, smoked fish<br><strong>Symptoms:</strong> Flu-like, serious in pregnancy<br><strong>Onset:</strong> 3–70 days</div>
+      </div>
+      <div class="card dark">
+        <div class="card-title">E.coli O157</div>
+        <div class="card-sub"><strong>Found in:</strong> Raw/undercooked beef, unpasteurised milk<br><strong>Symptoms:</strong> Severe cramps, bloody diarrhoea<br><strong>Onset:</strong> 1–8 days</div>
+      </div>
+      <div class="card dark">
+        <div class="card-title">Staphylococcus</div>
+        <div class="card-sub"><strong>Found in:</strong> Skin, nose, hands — transferred to food<br><strong>Symptoms:</strong> Rapid-onset vomiting<br><strong>Onset:</strong> 1–6 hours</div>
+      </div>
+      <div class="card dark">
+        <div class="card-title">Campylobacter</div>
+        <div class="card-sub"><strong>Found in:</strong> Raw poultry, untreated water<br><strong>Symptoms:</strong> Diarrhoea, cramps, fever<br><strong>Onset:</strong> 2–5 days</div>
+      </div>
+      <div class="card" style="background:rgba(245,166,35,0.1);border-color:rgba(245,166,35,0.3);">
+        <div class="card-title" style="color:#fff;">Remember</div>
+        <div class="card-sub">All five are invisible and tasteless. You cannot tell by looking or smelling whether food is safe.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — FATTOM -->
+  <div class="slide" data-index="3">
+    <h2>FATTOM — Conditions for Bacterial Growth</h2>
+    <div class="fattom-grid">
+      <div class="fattom-card" style="background:rgba(220,53,69,0.25);color:#fff;">
+        <div class="fattom-letter" style="color:#ff6b7a;">F</div>
+        <div class="fattom-word">Food</div>
+        <div class="fattom-desc">Bacteria need nutrients — proteins &amp; carbohydrates</div>
+      </div>
+      <div class="fattom-card" style="background:rgba(245,166,35,0.25);color:#fff;">
+        <div class="fattom-letter" style="color:#F5A623;">A</div>
+        <div class="fattom-word">Acidity</div>
+        <div class="fattom-desc">Most pathogens thrive at neutral pH (6–7)</div>
+      </div>
+      <div class="fattom-card" style="background:rgba(0,168,157,0.25);color:#fff;">
+        <div class="fattom-letter" style="color:#00A89D;">T</div>
+        <div class="fattom-word">Temperature</div>
+        <div class="fattom-desc">Danger Zone: 5°C to 63°C</div>
+      </div>
+      <div class="fattom-card" style="background:rgba(0,168,157,0.2);color:#fff;">
+        <div class="fattom-letter" style="color:#4dd0c8;">T</div>
+        <div class="fattom-word">Time</div>
+        <div class="fattom-desc">2+ hours in Danger Zone = risk. Numbers double every 20 min</div>
+      </div>
+      <div class="fattom-card" style="background:rgba(138,43,226,0.25);color:#fff;">
+        <div class="fattom-letter" style="color:#bf7fff;">O</div>
+        <div class="fattom-word">Oxygen</div>
+        <div class="fattom-desc">Some bacteria need oxygen; others thrive without it</div>
+      </div>
+      <div class="fattom-card" style="background:rgba(30,144,255,0.25);color:#fff;">
+        <div class="fattom-letter" style="color:#6ab4ff;">M</div>
+        <div class="fattom-word">Moisture</div>
+        <div class="fattom-desc">High water activity in food supports rapid growth</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — High Risk Foods -->
+  <div class="slide" data-index="4">
+    <h2>High Risk Foods</h2>
+    <div class="callout">High risk foods are <strong>ready to eat</strong> — they will not be cooked or reheated before consumption. Any contamination will reach the passenger directly.</div>
+    <div class="card-grid card-grid-3" style="flex:1;">
+      <div class="card">
+        <div class="card-title">🥩 Cooked Meat &amp; Poultry</div>
+        <div class="card-sub"><strong>Risk:</strong> Salmonella, Campylobacter, E.coli</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🐟 Cooked Fish &amp; Seafood</div>
+        <div class="card-sub"><strong>Risk:</strong> Listeria, Vibrio, Staphylococcus</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🥛 Dairy Products</div>
+        <div class="card-sub"><strong>Risk:</strong> Listeria, Salmonella, E.coli</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🥚 Eggs &amp; Egg Dishes</div>
+        <div class="card-sub"><strong>Risk:</strong> Salmonella — especially in raw or runny preparations</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🥗 Prepared Salads</div>
+        <div class="card-sub"><strong>Risk:</strong> E.coli, Listeria, Norovirus from cross contamination</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🍱 Ready-Made Meals</div>
+        <div class="card-sub"><strong>Risk:</strong> Any pathogen if temperature chain is broken</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — Cross Contamination -->
+  <div class="slide" data-index="5">
+    <h2>Cross Contamination</h2>
+    <div class="two-col">
+      <div>
+        <p class="col-title">How it spreads</p>
+        <ul class="rule-list">
+          <li>✋ <strong>Hands</strong> — touching raw food then ready-to-eat food without washing</li>
+          <li>🔪 <strong>Equipment</strong> — using the same utensils for raw and cooked items</li>
+          <li>📦 <strong>Packaging</strong> — leaking raw meat juices onto other products</li>
+          <li>🪰 <strong>Environment</strong> — pests, unclean surfaces, airborne droplets</li>
+        </ul>
+      </div>
+      <div>
+        <p class="col-title">The 4 S's — Prevention</p>
+        <ul class="rule-list">
+          <li>🧼 <strong>Separate</strong> — keep raw and ready-to-eat foods completely apart</li>
+          <li>🌡️ <strong>Store</strong> — raw below cooked in refrigerators, covered and labelled</li>
+          <li>🧽 <strong>Sanitise</strong> — clean and disinfect all surfaces and equipment between uses</li>
+          <li>✅ <strong>Sequence</strong> — handle ready-to-eat food before raw; never reverse</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — Personal Hygiene -->
+  <div class="slide" data-index="6">
+    <h2>Personal Hygiene</h2>
+    <div class="two-col">
+      <div>
+        <p class="col-title">Crew Hygiene Rules</p>
+        <ul class="rule-list">
+          <li>🙌 Wash hands before handling food and after every interruption</li>
+          <li>🤒 Report illness — do not handle food if vomiting or with diarrhoea</li>
+          <li>💅 No nail polish, false nails or jewellery when handling food</li>
+          <li>👕 Wear clean uniform; use gloves correctly and change them often</li>
+          <li>🩹 Cover all cuts and wounds with a blue waterproof dressing</li>
+          <li>💇 Tie back long hair; do not cough or sneeze over food</li>
+        </ul>
+      </div>
+      <div>
+        <p class="col-title">6-Step Hand Washing</p>
+        <div class="step-grid">
+          <div class="step-item"><div class="step-num">1</div><div class="step-text">Wet hands with warm running water</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-text">Apply soap — enough to lather</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-text">Rub palms together vigorously</div></div>
+          <div class="step-item"><div class="step-num">4</div><div class="step-text">Clean between fingers &amp; thumbs</div></div>
+          <div class="step-item"><div class="step-num">5</div><div class="step-text">Scrub backs of hands &amp; wrists</div></div>
+          <div class="step-item"><div class="step-num">6</div><div class="step-text">Rinse thoroughly, dry on clean towel — 20 seconds minimum</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — Temperature Control -->
+  <div class="slide" data-index="7">
+    <h2>Temperature Control</h2>
+    <div class="temp-row" style="background:rgba(30,144,255,0.2);">
+      <div class="temp-label" style="color:#6ab4ff;">❄️ Frozen</div>
+      <div class="temp-range">-18°C or below</div>
+      <div class="temp-note">Bacteria dormant — not killed. Never refreeze thawed food.</div>
+    </div>
+    <div class="temp-row" style="background:rgba(0,168,157,0.2);">
+      <div class="temp-label" style="color:#00A89D;">🌿 Chilled</div>
+      <div class="temp-range">1°C – 5°C</div>
+      <div class="temp-note">Slows bacterial growth. Check fridge temps at every service.</div>
+    </div>
+    <div class="temp-row" style="background:rgba(220,53,69,0.3);border:1px solid rgba(220,53,69,0.5);">
+      <div class="temp-label" style="color:#ff6b7a;">⚠️ Danger Zone</div>
+      <div class="temp-range">5°C – 63°C</div>
+      <div class="temp-note">Bacteria multiply rapidly. 2-hour rule applies — no exceptions.</div>
+    </div>
+    <div class="temp-row" style="background:rgba(245,166,35,0.2);">
+      <div class="temp-label" style="color:#F5A623;">🔥 Reheating</div>
+      <div class="temp-range">75°C or above</div>
+      <div class="temp-note">Core temperature must reach 75°C. Reheat once only.</div>
+    </div>
+    <div class="temp-row" style="background:rgba(255,100,0,0.2);">
+      <div class="temp-label" style="color:#ff8c42;">♨️ Hot Hold</div>
+      <div class="temp-range">63°C or above</div>
+      <div class="temp-note">Maintain throughout service. Check with probe thermometer.</div>
+    </div>
+    <div class="golden-rule">⏱ The Golden Rule — Never leave food in the Danger Zone for more than 2 hours</div>
+  </div>
+
+  <!-- SLIDE 8 — Unfit Food & Reporting -->
+  <div class="slide" data-index="8">
+    <h2>Unfit Food &amp; Reporting</h2>
+    <div class="two-col">
+      <div>
+        <p class="col-title">Signs of Unfit Food</p>
+        <ul class="rule-list">
+          <li>👃 Unusual, sour or off smell</li>
+          <li>🎨 Discolouration or mould visible</li>
+          <li>📅 Past use-by or best-before date</li>
+          <li>🌡️ Food found outside correct temperature range</li>
+          <li>📦 Damaged, swollen or leaking packaging</li>
+          <li>🐛 Evidence of pest contamination</li>
+        </ul>
+      </div>
+      <div>
+        <p class="col-title">6-Step Reporting Procedure</p>
+        <div class="step-grid">
+          <div class="step-item"><div class="step-num">1</div><div class="step-text"><strong>Stop</strong> — immediately cease use of the suspect food</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-text"><strong>Isolate</strong> — segregate from all other food; do not discard</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-text"><strong>Inform</strong> — notify the senior crew member immediately</div></div>
+          <div class="step-item"><div class="step-num">4</div><div class="step-text"><strong>Label</strong> — mark clearly as unfit; add date, flight number</div></div>
+          <div class="step-item"><div class="step-num">5</div><div class="step-text"><strong>Document</strong> — complete the food safety report form</div></div>
+          <div class="step-item"><div class="step-num">6</div><div class="step-text"><strong>Retain</strong> — keep the sample for investigation; never discard evidence</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #slide-area -->
+
+<!-- ═══════════════ NAV BAR ═══════════════ -->
+<div id="nav-bar">
+  <button id="btn-prev" disabled>&#8592; Prev</button>
+  <div class="dots" id="dots"></div>
+  <button id="btn-next">Next &#8594;</button>
+</div>
+
+<!-- ═══════════════ PRESENTER OVERLAY ═══════════════ -->
+<div id="presenter-overlay">
+  <canvas id="presenter-canvas"></canvas>
+</div>
+
+<div id="speech-bubble"></div>
+
+<div id="presenter-loading">
+  <div class="spinner"></div>
+  <span>Loading presenter…</span>
+</div>
+
+<div id="presenter-error"></div>
+
+<script>
+  (function() {
+    const slides   = Array.from(document.querySelectorAll('.slide'));
+    const dotsEl   = document.getElementById('dots');
+    const btnPrev  = document.getElementById('btn-prev');
+    const btnNext  = document.getElementById('btn-next');
+    let current    = 0;
+
+    slides.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.addEventListener('click', () => goTo(i));
+      dotsEl.appendChild(d);
+    });
+
+    function goTo(n) {
+      slides[current].classList.remove('active');
+      document.querySelectorAll('.dot')[current].classList.remove('active');
+      current = n;
+      slides[current].classList.add('active');
+      document.querySelectorAll('.dot')[current].classList.add('active');
+      btnPrev.disabled = current === 0;
+      btnNext.disabled = current === slides.length - 1;
+      if (window.presenterGoToSlide) window.presenterGoToSlide(current);
+    }
+
+    btnPrev.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
+    btnNext.addEventListener('click', () => { if (current < slides.length - 1) goTo(current + 1); });
+
+    goTo(0);
+  })();
+</script>
+
+</body>
+</html>
