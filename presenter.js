@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const WALK_SPEED         = 0.025;
 const CHAR_SCALE         = 1.6;
-const STAGE_HEIGHT       = 160;
+const STAGE_HEIGHT       = 320;
 const FLOOR_Y            = -0.85;
 const BUBBLE_MS_PER_CHAR = 62;
 const CROSSFADE_TIME     = 0.35;
@@ -53,9 +53,10 @@ function initThree() {
   scene = new THREE.Scene();
 
   const aspect = w / h;
-  camera = new THREE.PerspectiveCamera(28, aspect, 0.1, 100);
-  camera.position.set(0, 0.3, 5.5);
-  camera.lookAt(0, 0, 0);
+  // vFOV 32° + lookAt centred on character midpoint shows full body
+  camera = new THREE.PerspectiveCamera(32, aspect, 0.1, 100);
+  camera.position.set(0, 0.5, 5.5);
+  camera.lookAt(0, 0.5, 0);
 
   const ambient = new THREE.AmbientLight(0xffffff, 1.4);
   scene.add(ambient);
@@ -121,7 +122,6 @@ function crossfadeTo(toAction) {
 }
 
 function stageXFromPct(pct) {
-  const w = overlay.offsetWidth || window.innerWidth;
   const fov    = THREE.MathUtils.degToRad(camera.fov);
   const dist   = camera.position.z;
   const halfW  = Math.tan(fov / 2) * dist * camera.aspect;
@@ -195,9 +195,10 @@ function updateBubblePosition() {
   const h = window.innerHeight;
 
   let sx = (projected.x * 0.5 + 0.5) * w;
-  let sy = (-(projected.y * 0.5) + 0.5) * h;
-
-  sy -= 10;
+  // project() uses normalised device coords relative to the canvas,
+  // but we need screen coords. The canvas bottom aligns with the window bottom.
+  const canvasTop = window.innerHeight - STAGE_HEIGHT;
+  let sy = canvasTop + (-(projected.y * 0.5) + 0.5) * STAGE_HEIGHT;
 
   const bw = bubble.offsetWidth  || 220;
   const bh = bubble.offsetHeight || 60;
@@ -216,7 +217,7 @@ function animate() {
   if (mixer) mixer.update(delta);
 
   if (characterRoot && walkTarget !== null) {
-    const cur = characterRoot.position.x;
+    const cur  = characterRoot.position.x;
     const diff = walkTarget - cur;
     const step = WALK_SPEED;
 
@@ -240,9 +241,8 @@ function animate() {
 
 function onResize() {
   const w = overlay.offsetWidth;
-  const h = STAGE_HEIGHT;
-  renderer.setSize(w, h);
-  camera.aspect = w / h;
+  renderer.setSize(w, STAGE_HEIGHT);
+  camera.aspect = w / STAGE_HEIGHT;
   camera.updateProjectionMatrix();
 }
 

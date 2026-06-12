@@ -17,7 +17,8 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 160px;
+  /* leave room for nav bar only; character canvas overlaps from below with pointer-events:none */
+  bottom: 44px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -44,11 +45,11 @@ html, body {
 /* ── Nav bar ── */
 #nav-bar {
   position: fixed;
-  bottom: 160px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 44px;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,10 +96,10 @@ html, body {
 /* ── Presenter overlay ── */
 #presenter-overlay {
   position: fixed;
-  bottom: 0;
+  bottom: 44px;   /* sit above nav bar */
   left: 0;
   right: 0;
-  height: 160px;
+  height: 320px;  /* tall enough to show full character */
   z-index: 9999;
   pointer-events: none;
   overflow: visible;
@@ -107,7 +108,7 @@ html, body {
 
 #presenter-canvas {
   width: 100%;
-  height: 160px;
+  height: 320px;
   display: block;
 }
 
@@ -146,7 +147,7 @@ html, body {
 /* ── Loading spinner ── */
 #presenter-loading {
   position: fixed;
-  bottom: 20px;
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255,255,255,0.6);
@@ -171,7 +172,7 @@ html, body {
 
 #presenter-error {
   position: fixed;
-  bottom: 60px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   background: #c0392b;
