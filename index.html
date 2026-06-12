@@ -1,344 +1,699 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Food Safety Learning Module</title>
-  <link rel="stylesheet" href="./presenter.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>easyJet Food Safety — Crew Learning Module</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+:root{
+  --orange:#FF6600;--navy:#0D2240;--white:#FFFFFF;--surface:#F5F5F5;
+  --black:#000000;--muted:#666666;--border:#E0E0E0;--green:#00A651;--red:#D0021B;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:hidden;}
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
+/* Progress */
+#prog{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,0.1);z-index:999;}
+#prog-fill{height:100%;background:var(--orange);transition:width .4s ease;width:8.33%;}
 
-  <script type="module" src="./presenter.js"></script>
+/* App layout */
+#app{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;}
+
+/* Stage */
+#stage{position:relative;width:1280px;height:720px;overflow:hidden;flex-shrink:0;transform-origin:top center;}
+
+/* Slides */
+.slide{position:absolute;inset:0;display:none;flex-direction:column;}
+.slide.active{display:flex;animation:sIn .35s ease;}
+@keyframes sIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.top-bar{height:6px;background:var(--orange);flex-shrink:0;}
+.sc{flex:1;overflow:hidden;position:relative;}
+.slide-logo{position:absolute;bottom:14px;left:36px;background:var(--orange);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;z-index:5;letter-spacing:.03em;}
+.slide-num{position:absolute;bottom:16px;right:36px;font-size:11px;font-weight:600;color:var(--muted);z-index:5;}
+
+/* Nav */
+#nav{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+#nav button{background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 24px;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;}
+#nav button:hover{background:#e55a00;} #nav button:disabled{opacity:.35;cursor:default;}
+.dots{display:flex;gap:8px;align-items:center;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:background .2s,transform .2s;}
+.dot.active{background:var(--orange);transform:scale(1.4);}
+
+/* ── Character overlay ── */
+#char-canvas{position:absolute;bottom:0;left:16px;width:260px;height:360px;pointer-events:none;z-index:20;}
+#speech-bubble{
+  position:absolute;background:#fff;color:var(--navy);border-radius:12px;
+  padding:10px 14px;max-width:270px;font-size:12px;line-height:1.5;font-weight:600;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;z-index:21;
+  opacity:0;transition:opacity .3s ease;
+}
+#speech-bubble.vis{opacity:1;}
+#speech-bubble::after{content:'';position:absolute;bottom:-10px;left:20px;
+  border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #fff;}
+#char-load{position:absolute;bottom:368px;left:60px;font-size:11px;color:rgba(255,255,255,.5);
+  z-index:22;pointer-events:none;display:flex;align-items:center;gap:6px;}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--orange);border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+#char-err{position:absolute;bottom:370px;left:16px;background:var(--red);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;pointer-events:none;z-index:22;display:none;}
+
+/* ── Shared layout helpers ── */
+.navy{background:var(--navy);} .white{background:#fff;} .grey{background:var(--surface);}
+.pad{padding:28px 36px 44px 36px;height:100%;}
+.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:8px;}
+.eyebrow-w{color:rgba(255,255,255,.6);}
+.h1{font-size:54px;font-weight:900;line-height:1.05;}
+.h2{font-size:30px;font-weight:800;line-height:1.15;}
+.h3{font-size:20px;font-weight:700;}
+.h4{font-size:14px;font-weight:700;}
+.tw{color:#fff;} .tn{color:var(--navy);} .to{color:var(--orange);} .tm{color:var(--muted);}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+
+/* Cards */
+.card{background:#fff;border-radius:8px;padding:14px;border-left:4px solid var(--orange);box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.card-d{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:13px;}
+.card-g{background:#fff;border-radius:8px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.ct{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.ctw{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
+.cto{font-size:13px;font-weight:700;color:var(--orange);margin-bottom:4px;}
+.cb{font-size:11px;color:var(--muted);line-height:1.45;}
+.cbw{font-size:11px;color:rgba(255,255,255,.65);line-height:1.45;}
+.cem{font-size:20px;display:block;margin-bottom:6px;}
+
+/* Alert bars */
+.alert-r{border-left:4px solid var(--red);background:#fff5f5;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:var(--red);font-weight:600;margin-top:12px;}
+.alert-o{border-left:4px solid var(--orange);background:#fff8f3;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:#8B3A00;font-weight:600;margin-top:12px;}
+.rule-box{background:rgba(255,255,255,.08);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.9);font-weight:600;margin-top:14px;}
+.golden{border-left:4px solid var(--orange);background:rgba(255,102,0,.1);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#7a3100;font-weight:700;margin-top:12px;}
+
+/* Split */
+.split{display:grid;grid-template-columns:45% 55%;height:100%;}
+.sp-l-o{background:var(--orange);padding:36px 32px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
+.sp-l-n{background:var(--navy);padding:36px 32px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
+.sp-r{background:#fff;padding:36px 32px;display:flex;flex-direction:column;justify-content:center;overflow:auto;}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{background:var(--orange);color:#fff;padding:10px 12px;text-align:left;font-weight:700;}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+.tbl tr:nth-child(even) td{background:var(--surface);}
+.tbl-d td{color:rgba(255,255,255,.82);border-bottom:1px solid rgba(255,255,255,.08);}
+.tbl-d tr:nth-child(even) td{background:rgba(255,255,255,.04);}
+.tbl-d tr:nth-child(odd) td{background:transparent;}
+
+/* FATTOM */
+.fc{background:var(--navy);border-radius:10px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;}
+.fl{font-size:46px;font-weight:900;color:var(--orange);line-height:1;}
+.fw{font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.05em;}
+.fd{font-size:10px;color:rgba(255,255,255,.6);line-height:1.35;}
+
+/* Temp zones */
+.tz{display:flex;align-items:center;gap:14px;border-radius:8px;padding:12px 16px;margin-bottom:8px;}
+.tz-big{font-size:21px;font-weight:900;min-width:74px;}
+.tz-hot{background:rgba(208,2,27,.08);border-left:3px solid var(--red);}
+.tz-dng{background:rgba(255,102,0,.1);border-left:3px solid var(--orange);}
+.tz-cld{background:rgba(0,166,81,.08);border-left:3px solid var(--green);}
+.tz-frz{background:rgba(0,119,204,.08);border-left:3px solid #0077CC;}
+
+/* Temp badge */
+.tbadge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+
+/* 4 S bar */
+.fours{display:grid;grid-template-columns:repeat(4,1fr);border-radius:10px;overflow:hidden;margin-top:12px;}
+.sb{padding:12px 10px;text-align:center;}
+.sl{font-size:26px;font-weight:900;color:#fff;}
+.sw{font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;margin-top:2px;}
+.sd{font-size:10px;color:rgba(255,255,255,.8);margin-top:4px;line-height:1.3;}
+
+/* Checklist */
+.cl{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.cl li{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.45;color:#fff;}
+.tick{width:18px;height:18px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px;}
+
+/* Hand wash */
+.ws{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:10px;}
+.ws-item{background:var(--surface);border-top:3px solid var(--orange);border-radius:6px;padding:7px 4px;text-align:center;font-size:10px;color:var(--navy);font-weight:600;}
+.ws-n{font-size:20px;font-weight:900;color:var(--orange);display:block;line-height:1;margin-bottom:3px;}
+
+/* Step list */
+.stl{display:flex;flex-direction:column;gap:8px;}
+.sti{display:flex;align-items:flex-start;gap:10px;font-size:12px;}
+.stn{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;color:#fff;}
+
+/* Key message */
+.km{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px;}
+.km-ic{font-size:15px;flex-shrink:0;margin-top:2px;}
+.km-tx{font-size:12px;color:rgba(255,255,255,.85);line-height:1.45;}
+.km-kw{color:var(--orange);font-weight:700;}
+
+/* Mission card */
+.mc{background:var(--surface);border-top:3px solid var(--orange);border-radius:6px;padding:12px 13px;}
+.mc-t{font-size:11px;font-weight:800;color:var(--navy);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
+.mc-b{font-size:11px;color:var(--muted);line-height:1.45;}
+
+/* Food card */
+.fdc{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:8px;padding:13px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.fdc-em{font-size:22px;}
+
+/* Numbered card */
+.nc{background:#fff;border-radius:8px;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.nc-n{width:26px;height:26px;background:var(--orange);border-radius:50%;color:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:5px;}
+
+/* Pills */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;}
+.pill{background:rgba(255,255,255,.08);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.7);font-weight:600;}
+.deco{position:absolute;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
+</style>
 </head>
 <body>
+<div id="prog"><div id="prog-fill"></div></div>
 
-<!-- ═══════════════ SLIDE AREA ═══════════════ -->
-<div id="slide-area">
+<div id="app">
+<div id="stage">
 
-  <!-- SLIDE 0 — Cover -->
-  <div class="slide active" data-index="0">
-    <p class="cover-sub" style="color:#00A89D;font-size:0.8rem;margin-bottom:6px;">AIRLINE SAFETY &amp; GROUND OPERATIONS</p>
-    <h1 class="cover-title">Food Safety<br>Learning Module</h1>
-    <p class="cover-sub">Your guide to keeping every passenger safe</p>
-    <div class="module-list">
-      <div class="module-item"><span class="module-num">01</span>Causes of Food Poisoning</div>
-      <div class="module-item"><span class="module-num">02</span>Meet the Enemy — Bacteria</div>
-      <div class="module-item"><span class="module-num">03</span>FATTOM Framework</div>
-      <div class="module-item"><span class="module-num">04</span>High Risk Foods</div>
-      <div class="module-item"><span class="module-num">05</span>Cross Contamination</div>
-      <div class="module-item"><span class="module-num">06</span>Personal Hygiene</div>
-      <div class="module-item"><span class="module-num">07</span>Temperature Control</div>
-      <div class="module-item"><span class="module-num">08</span>Unfit Food &amp; Reporting</div>
-    </div>
-  </div>
-
-  <!-- SLIDE 1 — Causes of Food Poisoning -->
-  <div class="slide" data-index="1">
-    <h2>Causes of Food Poisoning</h2>
-    <div class="card-grid card-grid-3" style="flex:1;">
-      <div class="card">
-        <div class="card-title">🦠 Bacteria &amp; Toxins</div>
-        <div class="card-sub">The most common cause. Multiplies rapidly in warm, moist food environments.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🔬 Viruses</div>
-        <div class="card-sub">Norovirus and Hepatitis A can survive on surfaces and spread via touch.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">⚗️ Chemicals</div>
-        <div class="card-sub">Cleaning products, pesticides or improper packaging contaminating food.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🍄 Natural Toxins</div>
-        <div class="card-sub">Found in certain mushrooms, shellfish and improperly stored starchy foods.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🙌 Poor Hygiene</div>
-        <div class="card-sub">Unwashed hands, sneezing over food or working while ill transfers pathogens.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🌡️ Wrong Temperature</div>
-        <div class="card-sub">Leaving food in the Danger Zone (5–63°C) allows bacteria to multiply fast.</div>
+<!-- S1: Hero -->
+<div class="slide active" data-index="0">
+  <div class="top-bar"></div>
+  <div class="sc navy">
+    <div class="pad" style="padding-left:310px;overflow:hidden;position:relative;">
+      <div class="deco" style="width:380px;height:380px;top:-90px;right:-60px;"></div>
+      <div class="deco" style="width:220px;height:220px;bottom:30px;right:100px;"></div>
+      <span style="display:inline-block;background:var(--orange);color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.05em;margin-bottom:18px;">✈ Crew Learning Module</span>
+      <div class="h1 tw" style="margin-bottom:10px;">Food <span class="to">Safety</span></div>
+      <div style="font-size:21px;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:28px;">Airline Safety &amp; Ground Operations</div>
+      <div class="pills">
+        <span class="pill">Causes of Food Poisoning</span><span class="pill">Bacteria &amp; Growth</span>
+        <span class="pill">High-Risk Foods</span><span class="pill">Control Measures</span>
+        <span class="pill">Cross-Contamination</span><span class="pill">Personal Hygiene</span>
+        <span class="pill">Temperature Control</span><span class="pill">Unfit Food &amp; Reporting</span>
       </div>
     </div>
   </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">01 / 12</div>
+</div>
 
-  <!-- SLIDE 2 — Meet the Enemy -->
-  <div class="slide" data-index="2">
-    <h2>Meet the Enemy — Key Bacteria</h2>
-    <div class="card-grid card-grid-3" style="flex:1;">
-      <div class="card dark">
-        <div class="card-title">Salmonella</div>
-        <div class="card-sub"><strong>Found in:</strong> Raw poultry, eggs, dairy<br><strong>Symptoms:</strong> Diarrhoea, vomiting, fever<br><strong>Onset:</strong> 6–72 hours</div>
+<!-- S2: Why It Matters -->
+<div class="slide" data-index="1">
+  <div class="top-bar"></div>
+  <div class="sc">
+    <div class="split" style="height:100%;">
+      <div class="sp-l-o" style="padding-left:310px;">
+        <div class="eyebrow eyebrow-w">Why it matters</div>
+        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:14px;">&ldquo;You are the last line of defence.&rdquo;</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.6;">A single onboard food poisoning incident can mean passenger illness, a flight diversion, and serious legal and reputational consequences.</div>
       </div>
-      <div class="card dark">
-        <div class="card-title">Listeria</div>
-        <div class="card-sub"><strong>Found in:</strong> Soft cheese, deli meats, smoked fish<br><strong>Symptoms:</strong> Flu-like, serious in pregnancy<br><strong>Onset:</strong> 3–70 days</div>
-      </div>
-      <div class="card dark">
-        <div class="card-title">E.coli O157</div>
-        <div class="card-sub"><strong>Found in:</strong> Raw/undercooked beef, unpasteurised milk<br><strong>Symptoms:</strong> Severe cramps, bloody diarrhoea<br><strong>Onset:</strong> 1–8 days</div>
-      </div>
-      <div class="card dark">
-        <div class="card-title">Staphylococcus</div>
-        <div class="card-sub"><strong>Found in:</strong> Skin, nose, hands — transferred to food<br><strong>Symptoms:</strong> Rapid-onset vomiting<br><strong>Onset:</strong> 1–6 hours</div>
-      </div>
-      <div class="card dark">
-        <div class="card-title">Campylobacter</div>
-        <div class="card-sub"><strong>Found in:</strong> Raw poultry, untreated water<br><strong>Symptoms:</strong> Diarrhoea, cramps, fever<br><strong>Onset:</strong> 2–5 days</div>
-      </div>
-      <div class="card" style="background:rgba(245,166,35,0.1);border-color:rgba(245,166,35,0.3);">
-        <div class="card-title" style="color:#fff;">Remember</div>
-        <div class="card-sub">All five are invisible and tasteless. You cannot tell by looking or smelling whether food is safe.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 3 — FATTOM -->
-  <div class="slide" data-index="3">
-    <h2>FATTOM — Conditions for Bacterial Growth</h2>
-    <div class="fattom-grid">
-      <div class="fattom-card" style="background:rgba(220,53,69,0.25);color:#fff;">
-        <div class="fattom-letter" style="color:#ff6b7a;">F</div>
-        <div class="fattom-word">Food</div>
-        <div class="fattom-desc">Bacteria need nutrients — proteins &amp; carbohydrates</div>
-      </div>
-      <div class="fattom-card" style="background:rgba(245,166,35,0.25);color:#fff;">
-        <div class="fattom-letter" style="color:#F5A623;">A</div>
-        <div class="fattom-word">Acidity</div>
-        <div class="fattom-desc">Most pathogens thrive at neutral pH (6–7)</div>
-      </div>
-      <div class="fattom-card" style="background:rgba(0,168,157,0.25);color:#fff;">
-        <div class="fattom-letter" style="color:#00A89D;">T</div>
-        <div class="fattom-word">Temperature</div>
-        <div class="fattom-desc">Danger Zone: 5°C to 63°C</div>
-      </div>
-      <div class="fattom-card" style="background:rgba(0,168,157,0.2);color:#fff;">
-        <div class="fattom-letter" style="color:#4dd0c8;">T</div>
-        <div class="fattom-word">Time</div>
-        <div class="fattom-desc">2+ hours in Danger Zone = risk. Numbers double every 20 min</div>
-      </div>
-      <div class="fattom-card" style="background:rgba(138,43,226,0.25);color:#fff;">
-        <div class="fattom-letter" style="color:#bf7fff;">O</div>
-        <div class="fattom-word">Oxygen</div>
-        <div class="fattom-desc">Some bacteria need oxygen; others thrive without it</div>
-      </div>
-      <div class="fattom-card" style="background:rgba(30,144,255,0.25);color:#fff;">
-        <div class="fattom-letter" style="color:#6ab4ff;">M</div>
-        <div class="fattom-word">Moisture</div>
-        <div class="fattom-desc">High water activity in food supports rapid growth</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 4 — High Risk Foods -->
-  <div class="slide" data-index="4">
-    <h2>High Risk Foods</h2>
-    <div class="callout">High risk foods are <strong>ready to eat</strong> — they will not be cooked or reheated before consumption. Any contamination will reach the passenger directly.</div>
-    <div class="card-grid card-grid-3" style="flex:1;">
-      <div class="card">
-        <div class="card-title">🥩 Cooked Meat &amp; Poultry</div>
-        <div class="card-sub"><strong>Risk:</strong> Salmonella, Campylobacter, E.coli</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🐟 Cooked Fish &amp; Seafood</div>
-        <div class="card-sub"><strong>Risk:</strong> Listeria, Vibrio, Staphylococcus</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🥛 Dairy Products</div>
-        <div class="card-sub"><strong>Risk:</strong> Listeria, Salmonella, E.coli</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🥚 Eggs &amp; Egg Dishes</div>
-        <div class="card-sub"><strong>Risk:</strong> Salmonella — especially in raw or runny preparations</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🥗 Prepared Salads</div>
-        <div class="card-sub"><strong>Risk:</strong> E.coli, Listeria, Norovirus from cross contamination</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🍱 Ready-Made Meals</div>
-        <div class="card-sub"><strong>Risk:</strong> Any pathogen if temperature chain is broken</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 5 — Cross Contamination -->
-  <div class="slide" data-index="5">
-    <h2>Cross Contamination</h2>
-    <div class="two-col">
-      <div>
-        <p class="col-title">How it spreads</p>
-        <ul class="rule-list">
-          <li>✋ <strong>Hands</strong> — touching raw food then ready-to-eat food without washing</li>
-          <li>🔪 <strong>Equipment</strong> — using the same utensils for raw and cooked items</li>
-          <li>📦 <strong>Packaging</strong> — leaking raw meat juices onto other products</li>
-          <li>🪰 <strong>Environment</strong> — pests, unclean surfaces, airborne droplets</li>
-        </ul>
-      </div>
-      <div>
-        <p class="col-title">The 4 S's — Prevention</p>
-        <ul class="rule-list">
-          <li>🧼 <strong>Separate</strong> — keep raw and ready-to-eat foods completely apart</li>
-          <li>🌡️ <strong>Store</strong> — raw below cooked in refrigerators, covered and labelled</li>
-          <li>🧽 <strong>Sanitise</strong> — clean and disinfect all surfaces and equipment between uses</li>
-          <li>✅ <strong>Sequence</strong> — handle ready-to-eat food before raw; never reverse</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 6 — Personal Hygiene -->
-  <div class="slide" data-index="6">
-    <h2>Personal Hygiene</h2>
-    <div class="two-col">
-      <div>
-        <p class="col-title">Crew Hygiene Rules</p>
-        <ul class="rule-list">
-          <li>🙌 Wash hands before handling food and after every interruption</li>
-          <li>🤒 Report illness — do not handle food if vomiting or with diarrhoea</li>
-          <li>💅 No nail polish, false nails or jewellery when handling food</li>
-          <li>👕 Wear clean uniform; use gloves correctly and change them often</li>
-          <li>🩹 Cover all cuts and wounds with a blue waterproof dressing</li>
-          <li>💇 Tie back long hair; do not cough or sneeze over food</li>
-        </ul>
-      </div>
-      <div>
-        <p class="col-title">6-Step Hand Washing</p>
-        <div class="step-grid">
-          <div class="step-item"><div class="step-num">1</div><div class="step-text">Wet hands with warm running water</div></div>
-          <div class="step-item"><div class="step-num">2</div><div class="step-text">Apply soap — enough to lather</div></div>
-          <div class="step-item"><div class="step-num">3</div><div class="step-text">Rub palms together vigorously</div></div>
-          <div class="step-item"><div class="step-num">4</div><div class="step-text">Clean between fingers &amp; thumbs</div></div>
-          <div class="step-item"><div class="step-num">5</div><div class="step-text">Scrub backs of hands &amp; wrists</div></div>
-          <div class="step-item"><div class="step-num">6</div><div class="step-text">Rinse thoroughly, dry on clean towel — 20 seconds minimum</div></div>
+      <div class="sp-r">
+        <div class="eyebrow">Module Overview</div>
+        <div class="h3 tn" style="margin-bottom:14px;">Protecting every passenger.<br>Every flight.</div>
+        <div class="g2" style="gap:10px;">
+          <div class="mc"><div class="mc-t">Mission</div><div class="mc-b">Protect passenger &amp; crew health by maintaining the highest standards of food hygiene at every stage of service.</div></div>
+          <div class="mc"><div class="mc-t">Scope</div><div class="mc-b">Applies to all crew involved in food handling — from catering collection to service and disposal.</div></div>
+          <div class="mc"><div class="mc-t">Regulatory Basis</div><div class="mc-b">Compliant with Regulation (EC) 852/2004, UK Food Safety Act 1990, and airline food safety management systems.</div></div>
+          <div class="mc"><div class="mc-t">Completion</div><div class="mc-b">All crew must complete this module and pass the end assessment before undertaking food service duties.</div></div>
         </div>
       </div>
     </div>
   </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">02 / 12</div>
+</div>
 
-  <!-- SLIDE 7 — Temperature Control -->
-  <div class="slide" data-index="7">
-    <h2>Temperature Control</h2>
-    <div class="temp-row" style="background:rgba(30,144,255,0.2);">
-      <div class="temp-label" style="color:#6ab4ff;">❄️ Frozen</div>
-      <div class="temp-range">-18°C or below</div>
-      <div class="temp-note">Bacteria dormant — not killed. Never refreeze thawed food.</div>
+<!-- S3: Main Causes -->
+<div class="slide" data-index="2">
+  <div class="top-bar"></div>
+  <div class="sc white">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 01</div>
+      <div class="h2 tn" style="margin-bottom:14px;">The Main Causes of Food Poisoning</div>
+      <div class="g3">
+        <div class="card"><span class="cem">🦠</span><div class="ct">Bacteria &amp; Toxins</div><div class="cb">Salmonella, Listeria, E. coli, Campylobacter, Staph aureus contaminate food and multiply rapidly.</div></div>
+        <div class="card"><span class="cem">🔬</span><div class="ct">Viruses</div><div class="cb">Norovirus and Hepatitis A transfer from infected food handlers; rapid-onset illness in tiny quantities.</div></div>
+        <div class="card"><span class="cem">⚗️</span><div class="ct">Chemical Contamination</div><div class="cb">Cleaning chemicals, pesticide residues, or non-food-grade materials introduced during handling.</div></div>
+        <div class="card"><span class="cem">🌿</span><div class="ct">Natural Toxins</div><div class="cb">Kidney beans, certain shellfish, spoiled fish (histamine) when undercooked or incorrectly stored.</div></div>
+        <div class="card"><span class="cem">🙌</span><div class="ct">Poor Personal Hygiene</div><div class="cb">Failure to wash hands, working while ill — leading contributors in aviation catering incidents.</div></div>
+        <div class="card"><span class="cem">🌡️</span><div class="ct">Incorrect Temperature</div><div class="cb">Wrong temperatures allow bacterial growth and toxin production; critical risk on long-haul flights.</div></div>
+      </div>
+      <div class="alert-r">Key symptoms: nausea, vomiting, diarrhoea, abdominal pain, fever — onset 30 minutes to 72 hours after ingestion.</div>
     </div>
-    <div class="temp-row" style="background:rgba(0,168,157,0.2);">
-      <div class="temp-label" style="color:#00A89D;">🌿 Chilled</div>
-      <div class="temp-range">1°C – 5°C</div>
-      <div class="temp-note">Slows bacterial growth. Check fridge temps at every service.</div>
-    </div>
-    <div class="temp-row" style="background:rgba(220,53,69,0.3);border:1px solid rgba(220,53,69,0.5);">
-      <div class="temp-label" style="color:#ff6b7a;">⚠️ Danger Zone</div>
-      <div class="temp-range">5°C – 63°C</div>
-      <div class="temp-note">Bacteria multiply rapidly. 2-hour rule applies — no exceptions.</div>
-    </div>
-    <div class="temp-row" style="background:rgba(245,166,35,0.2);">
-      <div class="temp-label" style="color:#F5A623;">🔥 Reheating</div>
-      <div class="temp-range">75°C or above</div>
-      <div class="temp-note">Core temperature must reach 75°C. Reheat once only.</div>
-    </div>
-    <div class="temp-row" style="background:rgba(255,100,0,0.2);">
-      <div class="temp-label" style="color:#ff8c42;">♨️ Hot Hold</div>
-      <div class="temp-range">63°C or above</div>
-      <div class="temp-note">Maintain throughout service. Check with probe thermometer.</div>
-    </div>
-    <div class="golden-rule">⏱ The Golden Rule — Never leave food in the Danger Zone for more than 2 hours</div>
   </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">03 / 12</div>
+</div>
 
-  <!-- SLIDE 8 — Unfit Food & Reporting -->
-  <div class="slide" data-index="8">
-    <h2>Unfit Food &amp; Reporting</h2>
-    <div class="two-col">
-      <div>
-        <p class="col-title">Signs of Unfit Food</p>
-        <ul class="rule-list">
-          <li>👃 Unusual, sour or off smell</li>
-          <li>🎨 Discolouration or mould visible</li>
-          <li>📅 Past use-by or best-before date</li>
-          <li>🌡️ Food found outside correct temperature range</li>
-          <li>📦 Damaged, swollen or leaking packaging</li>
-          <li>🐛 Evidence of pest contamination</li>
+<!-- S4: Bacteria Table -->
+<div class="slide" data-index="3">
+  <div class="top-bar"></div>
+  <div class="sc navy">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 02</div>
+      <div class="h2 tw" style="margin-bottom:14px;">Common Food-Poisoning Bacteria in Aviation Catering</div>
+      <table class="tbl tbl-d">
+        <thead><tr><th>Bacterium</th><th>Common Sources</th><th>Risk</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">Salmonella spp.</td><td>Raw poultry, eggs, dairy, unwashed produce</td><td style="font-size:11px;">Nausea, fever, diarrhoea</td></tr>
+          <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">Listeria monocytogenes</td><td>Ready-to-eat meats, soft cheeses, smoked fish</td><td style="font-size:11px;">Serious risk to pregnant / immunocompromised</td></tr>
+          <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">E. coli O157</td><td>Undercooked beef, raw veg, cross-contamination</td><td style="font-size:11px;">Severe bloody diarrhoea, kidney failure</td></tr>
+          <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">Campylobacter</td><td>Raw poultry, unpasteurised milk</td><td style="font-size:11px;">Most common cause of bacterial food poisoning</td></tr>
+          <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">Staphylococcus aureus</td><td>Skin, nose, throat of food handlers</td><td style="font-size:11px;">Rapid-onset vomiting via toxins</td></tr>
+          <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">Bacillus cereus</td><td>Rice, pasta, cereals — spores survive cooking</td><td style="font-size:11px;">Toxin causes vomiting or diarrhoea</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">04 / 12</div>
+</div>
+
+<!-- S5: FATTOM -->
+<div class="slide" data-index="4">
+  <div class="top-bar"></div>
+  <div class="sc white">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 02 — Bacterial Growth</div>
+      <div class="h2 tn" style="margin-bottom:14px;">What bacteria need to multiply: <span class="to">F-A-T-T-O-M</span></div>
+      <div class="g6">
+        <div class="fc"><div class="fl">F</div><div class="fw">Food</div><div class="fd">High-protein foods: meat, fish, eggs, dairy, rice, pasta</div></div>
+        <div class="fc"><div class="fl">A</div><div class="fw">Acidity</div><div class="fd">Pathogens prefer neutral pH 6.5–7.5. Acidic foods inhibit growth</div></div>
+        <div class="fc"><div class="fl">T</div><div class="fw">Temperature</div><div class="fd">5°C–63°C is the danger zone. Doubles every 20 mins at 37°C</div></div>
+        <div class="fc"><div class="fl">T</div><div class="fw">Time</div><div class="fd">Safe → dangerous in as little as 2–4 hours</div></div>
+        <div class="fc"><div class="fl">O</div><div class="fw">Oxygen</div><div class="fd">Most are aerobic. Anaerobes (e.g. C. botulinum) thrive without</div></div>
+        <div class="fc"><div class="fl">M</div><div class="fw">Moisture</div><div class="fd">High water activity (Aw &gt;0.85) supports growth. Dried = lower risk</div></div>
+      </div>
+      <div style="background:var(--surface);border-left:4px solid var(--orange);border-radius:0 8px 8px 0;padding:12px 16px;font-size:12px;color:var(--muted);margin-top:14px;">
+        Remove any one of these conditions and bacterial growth is severely limited. <strong style="color:var(--navy);">Temperature and time are the ones crew control directly.</strong>
+      </div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">05 / 12</div>
+</div>
+
+<!-- S6: Danger Zone -->
+<div class="slide" data-index="5">
+  <div class="top-bar"></div>
+  <div class="sc">
+    <div class="split" style="height:100%;">
+      <div class="sp-l-n" style="padding-left:310px;">
+        <div class="eyebrow">Module 02 — Temperature</div>
+        <div class="h2 tw" style="margin-bottom:12px;">The <span class="to">Danger</span> Zone</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:14px;">Between 5°C and 63°C, bacteria multiply at dangerous speed. At body temperature (37°C), some strains double every 20 minutes.</div>
+        <div class="rule-box">⚠ Never leave high-risk food in the danger zone for more than 2 hours cumulative.</div>
+      </div>
+      <div class="sp-r" style="justify-content:flex-start;padding-top:40px;">
+        <div class="tz tz-hot"><div><div class="tz-big" style="color:var(--red);">≥ 63°C</div></div><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Hot Holding / Reheating</div><div style="font-size:11px;color:var(--muted);">Core temp must reach 75°C before serving.</div></div></div>
+        <div class="tz tz-dng" style="position:relative;">
+          <div><div class="tz-big" style="color:var(--orange);">5–63°C</div></div>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--navy);">⚠ THE DANGER ZONE</div><div style="font-size:11px;color:var(--muted);">Max 2 hours cumulative. Discard if exceeded.</div></div>
+          <span style="background:var(--orange);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;">HIGH RISK</span>
+        </div>
+        <div class="tz tz-cld"><div><div class="tz-big" style="color:var(--green);">≤ 5°C</div></div><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Chilled Storage</div><div style="font-size:11px;color:var(--muted);">Check on loading. Do not serve if exceeded.</div></div></div>
+        <div class="tz tz-frz"><div><div class="tz-big" style="color:#0077CC;">≤ −18°C</div></div><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Frozen Storage</div><div style="font-size:11px;color:var(--muted);">Must remain frozen at all times.</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">06 / 12</div>
+</div>
+
+<!-- S7: High-Risk Foods -->
+<div class="slide" data-index="6">
+  <div class="top-bar"></div>
+  <div class="sc white">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 03</div>
+      <div class="h2 tn" style="margin-bottom:14px;">High-Risk Foods in Airline Catering</div>
+      <div class="g3">
+        <div class="fdc"><div class="fdc-em">🍗</div><div><div class="ct">Cooked Meat &amp; Poultry</div><div class="cb">Chicken, beef, pork — must remain cold-chain protected throughout service.</div></div></div>
+        <div class="fdc"><div class="fdc-em">🐟</div><div><div class="ct">Cooked Seafood &amp; Fish</div><div class="cb">Salmon, prawn dishes, sushi — highly perishable and temperature sensitive.</div></div></div>
+        <div class="fdc"><div class="fdc-em">🧀</div><div><div class="ct">Dairy Products</div><div class="cb">Soft cheeses, yoghurt, cream sauces, custard — support Listeria and Staph growth.</div></div></div>
+        <div class="fdc"><div class="fdc-em">🥚</div><div><div class="ct">Eggs &amp; Egg Products</div><div class="cb">Quiches, mayo, egg-based salads — risk of Salmonella if temperature control fails.</div></div></div>
+        <div class="fdc"><div class="fdc-em">🥗</div><div><div class="ct">Ready-to-Eat Salads</div><div class="cb">Pre-prepared with cooked components — no further heating, immediate contamination risk.</div></div></div>
+        <div class="fdc"><div class="fdc-em">🍚</div><div><div class="ct">Cooked Rice &amp; Pasta</div><div class="cb">Bacillus cereus spores survive cooking and produce toxins during cooling.</div></div></div>
+      </div>
+      <div class="alert-o">High-risk foods must NEVER be left at ambient temperature for more than 2 hours. Cold items below 5°C — hot items above 63°C.</div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">07 / 12</div>
+</div>
+
+<!-- S8: Control Measures -->
+<div class="slide" data-index="7">
+  <div class="top-bar"></div>
+  <div class="sc grey">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 04</div>
+      <div class="h2 tn" style="margin-bottom:14px;">Control Measures — Food Hygiene &amp; Safety</div>
+      <div class="g3">
+        <div class="nc"><div class="nc-n">1</div><div class="ct">HACCP Principles</div><div class="cb">Identify hazards, set critical limits, monitor, verify, keep records. The backbone of airline catering safety.</div></div>
+        <div class="nc"><div class="nc-n">2</div><div class="ct">Supplier Assurance</div><div class="cb">Only accept food from approved, audited suppliers. Check delivery seals, temperatures, and use-by dates.</div></div>
+        <div class="nc"><div class="nc-n">3</div><div class="ct">Segregation</div><div class="cb">Keep raw and ready-to-eat items physically separated. Use dedicated colour-coded equipment.</div></div>
+        <div class="nc"><div class="nc-n">4</div><div class="ct">Cleaning &amp; Disinfection</div><div class="cb">Trolleys, surfaces, equipment cleaned per SOPs. Clean-as-you-go during all service.</div></div>
+        <div class="nc"><div class="nc-n">5</div><div class="ct">Temperature Monitoring</div><div class="cb">Check and record chilled item temperatures on loading and during service. Report exceedances immediately.</div></div>
+        <div class="nc"><div class="nc-n">6</div><div class="ct">Waste Management</div><div class="cb">Food waste bagged and secured. Never re-use or re-serve leftover food. Dispose per aircraft waste regulations.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">08 / 12</div>
+</div>
+
+<!-- S9: Cross Contamination -->
+<div class="slide" data-index="8">
+  <div class="top-bar"></div>
+  <div class="sc navy">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 05</div>
+      <div class="h2 tw" style="margin-bottom:14px;">Cross-Contamination &amp; Prevention</div>
+      <div class="g2" style="gap:10px;">
+        <div class="card-d"><div class="cto">Direct Contact</div><div class="cbw">Raw food (e.g. meat juice) directly contacts ready-to-eat food.</div></div>
+        <div class="card-d"><div class="cto">Via Hands</div><div class="cbw">Touch raw food then handle RTE items without washing. Most common route in cabin crew scenarios.</div></div>
+        <div class="card-d"><div class="cto">Equipment Transfer</div><div class="cbw">Same tongs/trays/surfaces for raw and RTE without cleaning between uses.</div></div>
+        <div class="card-d"><div class="cto">Drip Contamination</div><div class="cbw">Liquids from high-risk items drip onto items stored below. Always store raw below RTE.</div></div>
+      </div>
+      <div class="fours">
+        <div class="sb" style="background:var(--red);"><div class="sl">S</div><div class="sw">Separate</div><div class="sd">Keep raw and RTE foods apart at all times</div></div>
+        <div class="sb" style="background:var(--orange);"><div class="sl">S</div><div class="sw">Sanitise</div><div class="sd">Clean and disinfect surfaces and equipment</div></div>
+        <div class="sb" style="background:#0077CC;"><div class="sl">S</div><div class="sw">Safe Storage</div><div class="sd">Store correctly: raw below RTE, sealed containers</div></div>
+        <div class="sb" style="background:var(--green);"><div class="sl">S</div><div class="sw">Safe Hands</div><div class="sd">Wash hands between handling different food types</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">09 / 12</div>
+</div>
+
+<!-- S10: Personal Hygiene -->
+<div class="slide" data-index="9">
+  <div class="top-bar"></div>
+  <div class="sc">
+    <div class="split" style="height:100%;">
+      <div class="sp-l-o" style="padding-left:310px;overflow:auto;">
+        <div class="eyebrow eyebrow-w">Module 06</div>
+        <div class="h3 tw" style="margin-bottom:12px;">Personal Hygiene Standards</div>
+        <ul class="cl">
+          <li><div class="tick">✓</div><span>Report illness before duty — never handle food when unwell</span></li>
+          <li><div class="tick">✓</div><span>Nails short, clean, no polish or false nails during service</span></li>
+          <li><div class="tick">✓</div><span>No watches, rings, or jewellery (plain wedding band only)</span></li>
+          <li><div class="tick">✓</div><span>Hair tied back or covered at all times during service</span></li>
+          <li><div class="tick">✓</div><span>Clean uniform; cover cuts with brightly coloured waterproof dressing</span></li>
+          <li><div class="tick">✓</div><span>No eating, drinking, chewing gum near catering</span></li>
+          <li><div class="tick">✓</div><span>Avoid touching face, nose, hair while handling food</span></li>
         </ul>
       </div>
-      <div>
-        <p class="col-title">6-Step Reporting Procedure</p>
-        <div class="step-grid">
-          <div class="step-item"><div class="step-num">1</div><div class="step-text"><strong>Stop</strong> — immediately cease use of the suspect food</div></div>
-          <div class="step-item"><div class="step-num">2</div><div class="step-text"><strong>Isolate</strong> — segregate from all other food; do not discard</div></div>
-          <div class="step-item"><div class="step-num">3</div><div class="step-text"><strong>Inform</strong> — notify the senior crew member immediately</div></div>
-          <div class="step-item"><div class="step-num">4</div><div class="step-text"><strong>Label</strong> — mark clearly as unfit; add date, flight number</div></div>
-          <div class="step-item"><div class="step-num">5</div><div class="step-text"><strong>Document</strong> — complete the food safety report form</div></div>
-          <div class="step-item"><div class="step-num">6</div><div class="step-text"><strong>Retain</strong> — keep the sample for investigation; never discard evidence</div></div>
+      <div class="sp-r">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px;">The 6-Step Hand Washing Procedure</div>
+        <div class="h4 tn" style="margin-bottom:8px;">Minimum 20 seconds with soap and warm water.</div>
+        <div class="ws">
+          <div class="ws-item"><span class="ws-n">1</span>Wet &amp; Soap</div>
+          <div class="ws-item"><span class="ws-n">2</span>Palm to Palm</div>
+          <div class="ws-item"><span class="ws-n">3</span>Back of Hands</div>
+          <div class="ws-item"><span class="ws-n">4</span>Interlace Fingers</div>
+          <div class="ws-item"><span class="ws-n">5</span>Thumbs &amp; Nails</div>
+          <div class="ws-item"><span class="ws-n">6</span>Rinse &amp; Dry</div>
+        </div>
+        <div style="border-left:3px solid var(--orange);background:var(--surface);padding:9px 12px;border-radius:0 6px 6px 0;margin-top:12px;font-size:11px;color:var(--muted);">
+          Dry with a single-use paper towel. Wash hands: before food handling · after using the toilet · after touching raw food · after handling waste · after coughing or sneezing.
         </div>
       </div>
     </div>
   </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">10 / 12</div>
+</div>
 
-</div><!-- end #slide-area -->
+<!-- S11: Temperature Table -->
+<div class="slide" data-index="10">
+  <div class="top-bar"></div>
+  <div class="sc white">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 07</div>
+      <div class="h2 tn" style="margin-bottom:14px;">Temperature Control — Requirements &amp; Actions</div>
+      <table class="tbl" style="font-size:11px;">
+        <thead><tr><th>Zone</th><th>Temperature</th><th>Requirement</th><th style="color:#ffccaa;">Action if Exceeded</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700;">Frozen Storage</td><td><span class="tbadge" style="background:#e8f4ff;color:#0077CC;">≤ −18°C</span></td><td>Frozen items must remain frozen at all times</td><td style="color:var(--red);font-weight:600;">Remove from service; report to senior crew</td></tr>
+          <tr><td style="font-weight:700;">Chilled Storage</td><td><span class="tbadge" style="background:#e8f9f0;color:var(--green);">≤ 5°C</span></td><td>All high-risk chilled items; check on loading</td><td style="color:var(--red);font-weight:600;">Do not serve; quarantine; complete non-conformance report</td></tr>
+          <tr><td style="font-weight:700;">⚠ Danger Zone</td><td><span class="tbadge" style="background:#fff3e8;color:var(--orange);">5°C – 63°C</span></td><td>Minimise time in this range; max 2 hours cumulative</td><td style="color:var(--red);font-weight:600;">Discard if 2-hour limit exceeded or in doubt</td></tr>
+          <tr><td style="font-weight:700;">Hot Holding</td><td><span class="tbadge" style="background:#fff0f0;color:var(--red);">≥ 63°C</span></td><td>Hot food must reach 75°C core before serving; hold at ≥63°C</td><td style="color:var(--red);font-weight:600;">Reheat fully or discard; never serve lukewarm hot food</td></tr>
+          <tr><td style="font-weight:700;">Galley Ambient</td><td><span class="tbadge" style="background:var(--surface);color:var(--muted);">≤ 25°C</span></td><td>Keep service area cool; limit door-open time</td><td style="color:var(--red);font-weight:600;">Monitor; minimise exposure of perishables</td></tr>
+        </tbody>
+      </table>
+      <div class="golden">When in doubt, throw it out. Never take risks with temperature-abused food — passenger safety is paramount.</div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">11 / 12</div>
+</div>
 
-<!-- ═══════════════ NAV BAR ═══════════════ -->
-<div id="nav-bar">
+<!-- S12: Unfit Food -->
+<div class="slide" data-index="11">
+  <div class="top-bar"></div>
+  <div class="sc navy">
+    <div class="pad" style="padding-left:310px;">
+      <div class="eyebrow">Module 08 — Completing the Module</div>
+      <div class="h2 tw" style="margin-bottom:14px;">Unfit Food Procedure &amp; Key Messages</div>
+      <div class="g2" style="gap:20px;align-items:start;">
+        <div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);margin-bottom:10px;">Food Complaint Procedure</div>
+          <div class="stl">
+            <div class="sti"><div class="stn" style="background:var(--red);">1</div><div><strong style="color:#fff;">STOP</strong> <span style="color:rgba(255,255,255,.75);">— Remove the item from service immediately. Do not discard it.</span></div></div>
+            <div class="sti"><div class="stn" style="background:var(--orange);">2</div><div><strong style="color:#fff;">ISOLATE</strong> <span style="color:rgba(255,255,255,.75);">— Sealed bag: label with flight number, date, seat number, description.</span></div></div>
+            <div class="sti"><div class="stn" style="background:#0077CC;">3</div><div><strong style="color:#fff;">INFORM</strong> <span style="color:rgba(255,255,255,.75);">— Notify the Senior Cabin Crew Member / Purser immediately.</span></div></div>
+            <div class="sti"><div class="stn" style="background:var(--green);">4</div><div><strong style="color:#fff;">DOCUMENT</strong> <span style="color:rgba(255,255,255,.75);">— Complete a Catering Non-Conformance / Incident Report.</span></div></div>
+            <div class="sti"><div class="stn" style="background:#8B5CF6;">5</div><div><strong style="color:#fff;">PRESERVE</strong> <span style="color:rgba(255,255,255,.75);">— Retain for investigation. Hand to ground staff per SOPs.</span></div></div>
+            <div class="sti"><div class="stn" style="background:#06B6D4;">6</div><div><strong style="color:#fff;">REPORT</strong> <span style="color:rgba(255,255,255,.75);">— Submit to Food Safety / Quality team before end of duty.</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);margin-bottom:10px;">6 Non-Negotiable Key Messages</div>
+          <div class="km"><div class="km-ic">🙌</div><div class="km-tx"><span class="km-kw">Wash your hands.</span> Before food handling, after the toilet, after touching raw food.</div></div>
+          <div class="km"><div class="km-ic">🌡️</div><div class="km-tx"><span class="km-kw">Control temperature.</span> Never leave high-risk food in the danger zone (5°C–63°C) for more than 2 hours.</div></div>
+          <div class="km"><div class="km-ic">⚠️</div><div class="km-tx"><span class="km-kw">Prevent cross-contamination.</span> Separate raw from RTE. Sanitise surfaces. Keep equipment clean.</div></div>
+          <div class="km"><div class="km-ic">🤒</div><div class="km-tx"><span class="km-kw">Report illness.</span> Do not handle food if unwell with vomiting, diarrhoea, or skin infections.</div></div>
+          <div class="km"><div class="km-ic">🚫</div><div class="km-tx"><span class="km-kw">Reject &amp; report unfit food.</span> If in doubt, take it out — isolate, document, report.</div></div>
+          <div class="km"><div class="km-ic">📋</div><div class="km-tx"><span class="km-kw">Follow procedures.</span> SOPs exist to protect passengers and crew. Know them. Follow them. Every flight.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-logo">easyJet</div><div class="slide-num">12 / 12</div>
+</div>
+
+<!-- Character -->
+<canvas id="char-canvas"></canvas>
+<div id="speech-bubble"></div>
+<div id="char-load"><div class="spin"></div><span>Loading presenter…</span></div>
+<div id="char-err"></div>
+
+</div><!-- #stage -->
+
+<nav id="nav">
   <button id="btn-prev" disabled>&#8592; Prev</button>
   <div class="dots" id="dots"></div>
   <button id="btn-next">Next &#8594;</button>
-</div>
-
-<!-- ═══════════════ PRESENTER OVERLAY ═══════════════ -->
-<div id="presenter-overlay">
-  <canvas id="presenter-canvas"></canvas>
-</div>
-
-<div id="speech-bubble"></div>
-
-<div id="presenter-loading">
-  <div class="spinner"></div>
-  <span>Loading presenter…</span>
-</div>
-
-<div id="presenter-error"></div>
+</nav>
+</div><!-- #app -->
 
 <script>
-  (function() {
-    const slides   = Array.from(document.querySelectorAll('.slide'));
-    const dotsEl   = document.getElementById('dots');
-    const btnPrev  = document.getElementById('btn-prev');
-    const btnNext  = document.getElementById('btn-next');
-    let current    = 0;
+// Scale stage to fit viewport
+function scaleStage(){
+  const s=document.getElementById('stage');
+  const sx=(window.innerWidth-16)/1280, sy=(window.innerHeight-72)/720;
+  const sc=Math.min(sx,sy,1);
+  s.style.transform='scale('+sc+')';
+  s.style.marginBottom=((720*sc-720))+'px';
+}
+scaleStage(); window.addEventListener('resize',scaleStage);
 
-    slides.forEach((_, i) => {
-      const d = document.createElement('div');
-      d.className = 'dot' + (i === 0 ? ' active' : '');
-      d.addEventListener('click', () => goTo(i));
-      dotsEl.appendChild(d);
-    });
-
-    function goTo(n) {
-      slides[current].classList.remove('active');
-      document.querySelectorAll('.dot')[current].classList.remove('active');
-      current = n;
-      slides[current].classList.add('active');
-      document.querySelectorAll('.dot')[current].classList.add('active');
-      btnPrev.disabled = current === 0;
-      btnNext.disabled = current === slides.length - 1;
-      if (window.presenterGoToSlide) window.presenterGoToSlide(current);
-    }
-
-    btnPrev.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
-    btnNext.addEventListener('click', () => { if (current < slides.length - 1) goTo(current + 1); });
-
-    goTo(0);
-  })();
+// Slide controller
+(function(){
+  const slides=Array.from(document.querySelectorAll('.slide'));
+  const dotsEl=document.getElementById('dots');
+  const btnP=document.getElementById('btn-prev'), btnN=document.getElementById('btn-next');
+  const fill=document.getElementById('prog-fill');
+  let cur=0;
+  slides.forEach((_,i)=>{
+    const d=document.createElement('div'); d.className='dot'+(i===0?' active':'');
+    d.addEventListener('click',()=>goTo(i)); dotsEl.appendChild(d);
+  });
+  function goTo(n){
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('active');
+    cur=n;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('active');
+    btnP.disabled=cur===0; btnN.disabled=cur===slides.length-1;
+    fill.style.width=((cur+1)/slides.length*100)+'%';
+    if(window.presenterGoToSlide) window.presenterGoToSlide(cur);
+  }
+  btnP.addEventListener('click',()=>{if(cur>0)goTo(cur-1);});
+  btnN.addEventListener('click',()=>{if(cur<slides.length-1)goTo(cur+1);});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){if(cur<slides.length-1)goTo(cur+1);}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){if(cur>0)goTo(cur-1);}
+  });
+  goTo(0);
+})();
 </script>
 
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const CW=260, CH=360;
+const WALK_SPEED=0.018, CHAR_SCALE=1.6, FLOOR_Y=-0.85;
+const BMS=62, XFT=0.35;
+
+// Camera math: vFOV=40°, z=4, center_y=0.51
+// half_h = tan(20°)*4 = 1.456 → visible -0.946 to 1.966 → full character in frame
+const CAM_Y=0.51, CAM_Z=4.0, CAM_FOV=40;
+
+const NARRATIONS=[
+  "Welcome! I'm your food safety trainer. Let's make sure every passenger stays safe.",
+  "A single onboard food poisoning incident can cause diversions, illness, and serious legal consequences.",
+  "Six main causes — as crew, you have the power to control most of them directly.",
+  "Know your bacteria. All five are invisible and tasteless — that's why cold chain procedures are non-negotiable.",
+  "FATTOM. Remove any one condition and you stop bacterial growth. Temperature and time are yours to control.",
+  "The Danger Zone is 5 to 63 degrees. Bacteria double every 20 minutes at body temperature. No exceptions.",
+  "High-risk foods are ready to eat and won't be heated again. Every item on that tray deserves your full care.",
+  "These six control measures are your toolkit. HACCP, segregation, temperature monitoring — know them all.",
+  "Cross contamination is the silent one. It spreads via hands, equipment and packaging without you ever knowing.",
+  "Personal hygiene is your most powerful defence. Wash your hands properly — every single time.",
+  "Keep food out of the Danger Zone. When in doubt, throw it out. No compromises, no exceptions.",
+  "If you find unfit food — stop, isolate, inform, document. Never throw the evidence away."
+];
+
+const TARGET_X=[-0.5,0.5,-0.45,0.5,-0.45,0.5,-0.45,0.5,-0.45,0.5,-0.45,0.5];
+
+let scene,camera,renderer,mixer,clock;
+let idle,walk,talk,cur;
+let root=null, head=null;
+let wTarget=null, onArr=null;
+let talking=false, tTo=null, pTo=null;
+
+const cvs=document.getElementById('char-canvas');
+const bub=document.getElementById('speech-bubble');
+const ld=document.getElementById('char-load');
+const er=document.getElementById('char-err');
+
+function init(){
+  renderer=new THREE.WebGLRenderer({canvas:cvs,alpha:true,antialias:true});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(CW,CH);
+  renderer.setClearColor(0x000000,0);
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(CAM_FOV,CW/CH,0.1,100);
+  camera.position.set(0,CAM_Y,CAM_Z);
+  camera.lookAt(0,CAM_Y,0);
+  scene.add(new THREE.AmbientLight(0xffffff,1.5));
+  const dl=new THREE.DirectionalLight(0xffffff,1.2); dl.position.set(2,4,3); scene.add(dl);
+  clock=new THREE.Clock();
+  loadChar();
+  animate();
+}
+
+function loadChar(){
+  new GLTFLoader().load('./character_animated.glb',
+    gltf=>{
+      root=gltf.scene;
+      root.scale.setScalar(CHAR_SCALE);
+      root.position.set(0,FLOOR_Y,0);
+      scene.add(root);
+      head=root.getObjectByName('Head');
+      mixer=new THREE.AnimationMixer(root);
+      const f=n=>THREE.AnimationClip.findByName(gltf.animations,n);
+      idle=mixer.clipAction(f('Idle'));
+      walk=mixer.clipAction(f('Walk'));
+      talk=mixer.clipAction(f('Talk'));
+      [idle,walk,talk].forEach(a=>{a.setLoop(THREE.LoopRepeat,Infinity);a.clampWhenFinished=false;});
+      idle.play(); cur=idle;
+      ld.style.display='none';
+    },
+    undefined,
+    err=>{
+      console.error('GLB:',err);
+      ld.style.display='none';
+      er.textContent='Presenter failed to load.';
+      er.style.display='block';
+    }
+  );
+}
+
+function xfade(to){
+  if(!to||to===cur)return;
+  to.reset();to.play();
+  cur.crossFadeTo(to,XFT,true);
+  cur=to;
+}
+
+function walkTo(tx,cb){
+  if(!root){if(cb)cb();return;}
+  wTarget=THREE.MathUtils.clamp(tx,-0.85,0.85);
+  onArr=cb||null;
+  xfade(walk);
+}
+
+function speak(text){
+  if(!root)return;
+  if(tTo)clearTimeout(tTo);
+  talking=true; xfade(talk);
+  bub.textContent=text; bub.classList.add('vis');
+  tTo=setTimeout(()=>{
+    bub.classList.remove('vis');
+    talking=false; xfade(idle);
+  },text.length*BMS+1500);
+}
+
+window.presenterGoToSlide=function(i){
+  if(!root)return;
+  if(tTo)clearTimeout(tTo);
+  if(pTo)clearTimeout(pTo);
+  bub.classList.remove('vis'); talking=false;
+  walkTo(TARGET_X[i]??0,()=>{
+    speak(NARRATIONS[i]);
+    pTo=setTimeout(()=>{
+      const dir=Math.random()>.5?1:-1;
+      const px=THREE.MathUtils.clamp((TARGET_X[i]??0)+dir*0.4,-0.85,0.85);
+      walkTo(px,()=>walkTo(TARGET_X[i]??0,()=>xfade(idle)));
+    },NARRATIONS[i].length*BMS+1500);
+  });
+};
+
+function updateBubble(){
+  if(!head||!bub.classList.contains('vis'))return;
+  const wp=new THREE.Vector3();
+  head.getWorldPosition(wp); wp.y+=0.15;
+  const ndc=wp.clone().project(camera);
+  // canvas is at left:16px, bottom:0 within the 1280×720 stage
+  const stageH=720;
+  const canvasTop=stageH-CH;
+  const cx=16+(ndc.x*0.5+0.5)*CW;
+  const cy=canvasTop+(1-(ndc.y*0.5+0.5))*CH;
+  const bw=bub.offsetWidth||220, bh=bub.offsetHeight||60;
+  bub.style.left=Math.max(8,Math.min(cx-bw/2,1280-bw-8))+'px';
+  bub.style.top =Math.max(8,Math.min(cy-bh-14,stageH-bh-40))+'px';
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const d=clock.getDelta();
+  if(mixer)mixer.update(d);
+  if(root&&wTarget!==null){
+    const diff=wTarget-root.position.x;
+    if(Math.abs(diff)<WALK_SPEED*2){
+      root.position.x=wTarget; wTarget=null;
+      const cb=onArr; onArr=null;
+      if(!talking)xfade(idle);
+      if(cb)cb();
+    } else {
+      const dir=Math.sign(diff);
+      root.position.x+=dir*WALK_SPEED;
+      root.scale.x=-dir*CHAR_SCALE;
+    }
+  }
+  updateBubble();
+  renderer.render(scene,camera);
+}
+
+init();
+</script>
 </body>
 </html>
