@@ -326,10 +326,7 @@ html, body {
 }
 
 .cause-card {
-  background: var(--surface);
-  border-radius: 8px; padding: 24px 22px;
-  border-left: 4px solid var(--orange);
-  position: relative;
+  /* visual styles live on .flip-front.cause-front */
 }
 .cause-icon {
   font-size: 28px; margin-bottom: 10px; display: block;
@@ -410,11 +407,7 @@ html, body {
 }
 
 .fattom-card {
-  background: var(--surface);
-  border-radius: 8px; padding: 28px 16px 24px;
-  display: flex; flex-direction: column;
-  align-items: center; text-align: center;
-  border-top: 3px solid var(--orange);
+  /* visual styles live on .flip-front.fattom-front */
 }
 .fattom-letter {
   font-size: 52px; font-weight: 900;
@@ -535,11 +528,7 @@ html, body {
 }
 
 .food-card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 8px; padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  display: flex; gap: 14px; align-items: flex-start;
+  /* visual styles live on .flip-front.food-front */
 }
 .food-emoji {
   font-size: 30px; flex-shrink: 0;
@@ -910,16 +899,13 @@ html, body {
   justify-content: center;
 }
 .flip-back.fattom-back {
-  background: var(--navy);
-  padding: 18px 14px;
+  background: var(--orange);
+  padding: 16px 12px;
   align-items: center; text-align: center;
   justify-content: center; gap: 8px;
 }
-.fattom-back .back-label { color: rgba(255,255,255,0.5); }
-.fattom-back .back-action { color: rgba(255,255,255,0.9); font-size: 12px; line-height: 1.45; }
-.fattom-back .back-letter {
-  font-size: 36px; font-weight: 900; color: var(--orange); line-height: 1;
-}
+.fattom-back .back-label { color: rgba(255,255,255,0.7); }
+.fattom-back .back-action { color: var(--white); font-size: 12px; line-height: 1.45; font-weight: 700; }
 
 /* ── Food cards (slide 7) ─────────────────────────────────── */
 .food-card {
@@ -1269,7 +1255,6 @@ html, body {
           <div class="fattom-desc">High-protein foods: meat, fish, eggs, dairy, rice, pasta</div>
         </div>
         <div class="flip-back fattom-back">
-          <div class="back-letter">F</div>
           <div class="back-label">How to control</div>
           <div class="back-action">Keep high-risk foods refrigerated or frozen. Never leave at ambient temperature.</div>
         </div>
@@ -1283,7 +1268,6 @@ html, body {
           <div class="fattom-desc">Pathogens prefer neutral pH 6.5–7.5. Acidic foods inhibit growth</div>
         </div>
         <div class="flip-back fattom-back">
-          <div class="back-letter">A</div>
           <div class="back-label">How to control</div>
           <div class="back-action">Acidic marinades and preservatives inhibit growth. Don't mix acidic and neutral foods.</div>
         </div>
@@ -1297,7 +1281,6 @@ html, body {
           <div class="fattom-desc">5°C–63°C is the danger zone. Double every 20 mins at 37°C</div>
         </div>
         <div class="flip-back fattom-back">
-          <div class="back-letter">T</div>
           <div class="back-label">How to control</div>
           <div class="back-action">Keep food below 5°C or above 63°C. Check temps on loading and during service.</div>
         </div>
@@ -1311,7 +1294,6 @@ html, body {
           <div class="fattom-desc">Safe → dangerous level in as little as 2–4 hours</div>
         </div>
         <div class="flip-back fattom-back">
-          <div class="back-letter">T</div>
           <div class="back-label">How to control</div>
           <div class="back-action">Use within 2 hours of service. Never hold food out longer — when in doubt, throw it out.</div>
         </div>
@@ -1325,7 +1307,6 @@ html, body {
           <div class="fattom-desc">Most are aerobic. Anaerobes (e.g. C. botulinum) thrive without</div>
         </div>
         <div class="flip-back fattom-back">
-          <div class="back-letter">O</div>
           <div class="back-label">How to control</div>
           <div class="back-action">Vacuum-packed or sealed items limit aerobic bacteria. Never puncture sealed packaging early.</div>
         </div>
@@ -1339,7 +1320,6 @@ html, body {
           <div class="fattom-desc">High water activity (Aw &gt;0.85) supports growth. Dried = lower risk</div>
         </div>
         <div class="flip-back fattom-back">
-          <div class="back-letter">M</div>
           <div class="back-label">How to control</div>
           <div class="back-action">Cover all wet foods. Dry/dehydrated items are lower risk. Keep packaging sealed.</div>
         </div>
