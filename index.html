@@ -11,23 +11,19 @@
 <style>
 :root{
   --orange:#FF6600;--navy:#0D2240;--white:#FFFFFF;--surface:#F5F5F5;
-  --black:#000000;--muted:#666666;--border:#E0E0E0;--green:#00A651;--red:#D0021B;
+  --muted:#666666;--border:#E0E0E0;--green:#00A651;--red:#D0021B;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:hidden;}
 
-/* Progress */
-#prog{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,0.1);z-index:999;}
+#prog{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(0,0,0,.1);z-index:999;}
 #prog-fill{height:100%;background:var(--orange);transition:width .4s ease;width:8.33%;}
 
-/* App layout */
 #app{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;}
 
-/* Stage */
-#stage{position:relative;width:1280px;height:720px;overflow:hidden;flex-shrink:0;transform-origin:top center;}
+#stage{position:relative;width:1280px;height:720px;overflow:hidden;flex-shrink:0;transform-origin:top center;background:#fff;}
 
-/* Slides */
-.slide{position:absolute;inset:0;display:none;flex-direction:column;}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;background:#fff;}
 .slide.active{display:flex;animation:sIn .35s ease;}
 @keyframes sIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .top-bar{height:6px;background:var(--orange);flex-shrink:0;}
@@ -35,94 +31,97 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 .slide-logo{position:absolute;bottom:14px;left:36px;background:var(--orange);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;z-index:5;letter-spacing:.03em;}
 .slide-num{position:absolute;bottom:16px;right:36px;font-size:11px;font-weight:600;color:var(--muted);z-index:5;}
 
-/* Nav */
 #nav{display:flex;align-items:center;gap:14px;flex-shrink:0;}
 #nav button{background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 24px;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;}
 #nav button:hover{background:#e55a00;} #nav button:disabled{opacity:.35;cursor:default;}
 .dots{display:flex;gap:8px;align-items:center;}
-.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:background .2s,transform .2s;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(0,0,0,.2);cursor:pointer;transition:background .2s,transform .2s;}
 .dot.active{background:var(--orange);transform:scale(1.4);}
 
-/* ── Character overlay ── */
-#char-canvas{position:absolute;bottom:0;left:16px;width:260px;height:360px;pointer-events:none;z-index:20;}
+/* ── Character: fixed bottom-right, canvas tall enough for full body + margin ── */
+#char-canvas{position:absolute;bottom:0;right:16px;width:300px;height:440px;pointer-events:none;z-index:20;}
+
+/* ── Speech bubble: LEFT of character, tail points right ── */
 #speech-bubble{
-  position:absolute;background:#fff;color:var(--navy);border-radius:12px;
-  padding:10px 14px;max-width:270px;font-size:12px;line-height:1.5;font-weight:600;
-  box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;z-index:21;
+  position:absolute;background:#fff;color:var(--navy);
+  border:2px solid var(--orange);
+  border-radius:12px;padding:10px 14px;max-width:260px;
+  font-size:12px;line-height:1.5;font-weight:600;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);pointer-events:none;z-index:21;
   opacity:0;transition:opacity .3s ease;
 }
 #speech-bubble.vis{opacity:1;}
-#speech-bubble::after{content:'';position:absolute;bottom:-10px;left:20px;
-  border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #fff;}
-#char-load{position:absolute;bottom:368px;left:60px;font-size:11px;color:rgba(255,255,255,.5);
-  z-index:22;pointer-events:none;display:flex;align-items:center;gap:6px;}
-.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--orange);border-radius:50%;animation:sp .8s linear infinite;}
-@keyframes sp{to{transform:rotate(360deg)}}
-#char-err{position:absolute;bottom:370px;left:16px;background:var(--red);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;pointer-events:none;z-index:22;display:none;}
+#speech-bubble::after{
+  content:'';position:absolute;
+  right:-11px;top:16px;
+  border-top:8px solid transparent;
+  border-bottom:8px solid transparent;
+  border-left:11px solid var(--orange);
+}
+#speech-bubble::before{
+  content:'';position:absolute;
+  right:-9px;top:18px;
+  border-top:6px solid transparent;
+  border-bottom:6px solid transparent;
+  border-left:9px solid #fff;
+  z-index:1;
+}
 
-/* ── Shared layout helpers ── */
-.navy{background:var(--navy);} .white{background:#fff;} .grey{background:var(--surface);}
+#char-load{position:absolute;bottom:448px;right:100px;font-size:11px;color:rgba(0,0,0,.4);
+  z-index:22;pointer-events:none;display:flex;align-items:center;gap:6px;}
+.spin{width:14px;height:14px;border:2px solid rgba(0,0,0,.15);border-top-color:var(--orange);border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+#char-err{position:absolute;bottom:450px;right:16px;background:var(--red);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;pointer-events:none;z-index:22;display:none;}
+
+/* ── Shared ── */
 .pad{padding:28px 36px 44px 36px;height:100%;}
 .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:8px;}
-.eyebrow-w{color:rgba(255,255,255,.6);}
 .h1{font-size:54px;font-weight:900;line-height:1.05;}
 .h2{font-size:30px;font-weight:800;line-height:1.15;}
 .h3{font-size:20px;font-weight:700;}
 .h4{font-size:14px;font-weight:700;}
-.tw{color:#fff;} .tn{color:var(--navy);} .to{color:var(--orange);} .tm{color:var(--muted);}
+.tn{color:var(--navy);} .to{color:var(--orange);} .tm{color:var(--muted);}
 
-/* Grid */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .g6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
 
-/* Cards */
-.card{background:#fff;border-radius:8px;padding:14px;border-left:4px solid var(--orange);box-shadow:0 2px 8px rgba(0,0,0,.06);}
-.card-d{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:13px;}
-.card-g{background:#fff;border-radius:8px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.card{background:var(--surface);border-radius:8px;padding:14px;border-left:4px solid var(--orange);}
+.card-w{background:#fff;border-radius:8px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border);}
 .ct{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;}
-.ctw{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
 .cto{font-size:13px;font-weight:700;color:var(--orange);margin-bottom:4px;}
 .cb{font-size:11px;color:var(--muted);line-height:1.45;}
-.cbw{font-size:11px;color:rgba(255,255,255,.65);line-height:1.45;}
 .cem{font-size:20px;display:block;margin-bottom:6px;}
 
-/* Alert bars */
 .alert-r{border-left:4px solid var(--red);background:#fff5f5;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:var(--red);font-weight:600;margin-top:12px;}
 .alert-o{border-left:4px solid var(--orange);background:#fff8f3;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:#8B3A00;font-weight:600;margin-top:12px;}
-.rule-box{background:rgba(255,255,255,.08);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.9);font-weight:600;margin-top:14px;}
-.golden{border-left:4px solid var(--orange);background:rgba(255,102,0,.1);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#7a3100;font-weight:700;margin-top:12px;}
+.golden{border-left:4px solid var(--orange);background:#fff8f3;padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#7a3100;font-weight:700;margin-top:12px;}
+.rule-box{border-left:3px solid var(--orange);background:#fff8f3;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#8B3A00;font-weight:600;margin-top:14px;}
 
-/* Split */
+/* Split layout */
 .split{display:grid;grid-template-columns:45% 55%;height:100%;}
 .sp-l-o{background:var(--orange);padding:36px 32px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
-.sp-l-n{background:var(--navy);padding:36px 32px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
 .sp-r{background:#fff;padding:36px 32px;display:flex;flex-direction:column;justify-content:center;overflow:auto;}
 
 /* Table */
 .tbl{width:100%;border-collapse:collapse;font-size:12px;}
 .tbl th{background:var(--orange);color:#fff;padding:10px 12px;text-align:left;font-weight:700;}
-.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--navy);}
 .tbl tr:nth-child(even) td{background:var(--surface);}
-.tbl-d td{color:rgba(255,255,255,.82);border-bottom:1px solid rgba(255,255,255,.08);}
-.tbl-d tr:nth-child(even) td{background:rgba(255,255,255,.04);}
-.tbl-d tr:nth-child(odd) td{background:transparent;}
 
-/* FATTOM */
-.fc{background:var(--navy);border-radius:10px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;}
+/* FATTOM — light cards */
+.fc{background:var(--surface);border-radius:10px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;border-top:3px solid var(--orange);}
 .fl{font-size:46px;font-weight:900;color:var(--orange);line-height:1;}
-.fw{font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.05em;}
-.fd{font-size:10px;color:rgba(255,255,255,.6);line-height:1.35;}
+.fw{font-size:11px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;}
+.fd{font-size:10px;color:var(--muted);line-height:1.35;}
 
 /* Temp zones */
-.tz{display:flex;align-items:center;gap:14px;border-radius:8px;padding:12px 16px;margin-bottom:8px;}
-.tz-big{font-size:21px;font-weight:900;min-width:74px;}
-.tz-hot{background:rgba(208,2,27,.08);border-left:3px solid var(--red);}
-.tz-dng{background:rgba(255,102,0,.1);border-left:3px solid var(--orange);}
-.tz-cld{background:rgba(0,166,81,.08);border-left:3px solid var(--green);}
-.tz-frz{background:rgba(0,119,204,.08);border-left:3px solid #0077CC;}
-
-/* Temp badge */
+.tz{display:flex;align-items:center;gap:14px;border-radius:8px;padding:11px 14px;margin-bottom:7px;}
+.tz-big{font-size:20px;font-weight:900;min-width:72px;}
+.tz-hot{background:#fff0f0;border-left:3px solid var(--red);}
+.tz-dng{background:#fff3e8;border-left:3px solid var(--orange);}
+.tz-cld{background:#edfff4;border-left:3px solid var(--green);}
+.tz-frz{background:#e8f4ff;border-left:3px solid #0077CC;}
 .tbadge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
 
 /* 4 S bar */
@@ -130,12 +129,12 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 .sb{padding:12px 10px;text-align:center;}
 .sl{font-size:26px;font-weight:900;color:#fff;}
 .sw{font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;margin-top:2px;}
-.sd{font-size:10px;color:rgba(255,255,255,.8);margin-top:4px;line-height:1.3;}
+.sd{font-size:10px;color:rgba(255,255,255,.85);margin-top:4px;line-height:1.3;}
 
 /* Checklist */
 .cl{list-style:none;display:flex;flex-direction:column;gap:7px;}
 .cl li{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.45;color:#fff;}
-.tick{width:18px;height:18px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px;}
+.tick{width:18px;height:18px;background:rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px;}
 
 /* Hand wash */
 .ws{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:10px;}
@@ -150,7 +149,7 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 /* Key message */
 .km{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px;}
 .km-ic{font-size:15px;flex-shrink:0;margin-top:2px;}
-.km-tx{font-size:12px;color:rgba(255,255,255,.85);line-height:1.45;}
+.km-tx{font-size:12px;color:var(--navy);line-height:1.45;}
 .km-kw{color:var(--orange);font-weight:700;}
 
 /* Mission card */
@@ -159,17 +158,19 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 .mc-b{font-size:11px;color:var(--muted);line-height:1.45;}
 
 /* Food card */
-.fdc{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:8px;padding:13px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.fdc{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:8px;padding:13px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--border);}
 .fdc-em{font-size:22px;}
 
 /* Numbered card */
-.nc{background:#fff;border-radius:8px;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.nc{background:#fff;border-radius:8px;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--border);}
 .nc-n{width:26px;height:26px;background:var(--orange);border-radius:50%;color:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:5px;}
 
+/* Decorative for hero */
+.deco{position:absolute;border-radius:50%;background:rgba(255,102,0,.05);pointer-events:none;}
+
 /* Pills */
-.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;}
-.pill{background:rgba(255,255,255,.08);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.7);font-weight:600;}
-.deco{position:absolute;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;}
+.pill{background:var(--surface);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--navy);font-weight:600;border:1px solid var(--border);}
 </style>
 </head>
 <body>
@@ -181,13 +182,13 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S1: Hero -->
 <div class="slide active" data-index="0">
   <div class="top-bar"></div>
-  <div class="sc navy">
-    <div class="pad" style="padding-left:310px;overflow:hidden;position:relative;">
-      <div class="deco" style="width:380px;height:380px;top:-90px;right:-60px;"></div>
-      <div class="deco" style="width:220px;height:220px;bottom:30px;right:100px;"></div>
+  <div class="sc" style="background:#fff;">
+    <div class="pad" style="overflow:hidden;position:relative;">
+      <div class="deco" style="width:420px;height:420px;top:-120px;right:-60px;"></div>
+      <div class="deco" style="width:240px;height:240px;bottom:20px;right:120px;"></div>
       <span style="display:inline-block;background:var(--orange);color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.05em;margin-bottom:18px;">✈ Crew Learning Module</span>
-      <div class="h1 tw" style="margin-bottom:10px;">Food <span class="to">Safety</span></div>
-      <div style="font-size:21px;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:28px;">Airline Safety &amp; Ground Operations</div>
+      <div class="h1 tn" style="margin-bottom:10px;">Food <span class="to">Safety</span></div>
+      <div style="font-size:21px;font-weight:600;color:var(--muted);margin-bottom:24px;">Airline Safety &amp; Ground Operations</div>
       <div class="pills">
         <span class="pill">Causes of Food Poisoning</span><span class="pill">Bacteria &amp; Growth</span>
         <span class="pill">High-Risk Foods</span><span class="pill">Control Measures</span>
@@ -204,10 +205,10 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
   <div class="top-bar"></div>
   <div class="sc">
     <div class="split" style="height:100%;">
-      <div class="sp-l-o" style="padding-left:310px;">
-        <div class="eyebrow eyebrow-w">Why it matters</div>
-        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:14px;">&ldquo;You are the last line of defence.&rdquo;</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.6;">A single onboard food poisoning incident can mean passenger illness, a flight diversion, and serious legal and reputational consequences.</div>
+      <div class="sp-l-o">
+        <div class="eyebrow" style="color:rgba(255,255,255,.7);">Why it matters</div>
+        <div style="font-size:40px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:14px;">&ldquo;You are the last line of defence.&rdquo;</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.9);line-height:1.6;">A single onboard food poisoning incident can mean passenger illness, a flight diversion, and serious legal and reputational consequences.</div>
       </div>
       <div class="sp-r">
         <div class="eyebrow">Module Overview</div>
@@ -227,8 +228,8 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S3: Main Causes -->
 <div class="slide" data-index="2">
   <div class="top-bar"></div>
-  <div class="sc white">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 01</div>
       <div class="h2 tn" style="margin-bottom:14px;">The Main Causes of Food Poisoning</div>
       <div class="g3">
@@ -248,11 +249,11 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S4: Bacteria Table -->
 <div class="slide" data-index="3">
   <div class="top-bar"></div>
-  <div class="sc navy">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 02</div>
-      <div class="h2 tw" style="margin-bottom:14px;">Common Food-Poisoning Bacteria in Aviation Catering</div>
-      <table class="tbl tbl-d">
+      <div class="h2 tn" style="margin-bottom:14px;">Common Food-Poisoning Bacteria in Aviation Catering</div>
+      <table class="tbl">
         <thead><tr><th>Bacterium</th><th>Common Sources</th><th>Risk</th></tr></thead>
         <tbody>
           <tr><td style="color:var(--orange);font-style:italic;font-weight:600;">Salmonella spp.</td><td>Raw poultry, eggs, dairy, unwashed produce</td><td style="font-size:11px;">Nausea, fever, diarrhoea</td></tr>
@@ -271,8 +272,8 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S5: FATTOM -->
 <div class="slide" data-index="4">
   <div class="top-bar"></div>
-  <div class="sc white">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 02 — Bacterial Growth</div>
       <div class="h2 tn" style="margin-bottom:14px;">What bacteria need to multiply: <span class="to">F-A-T-T-O-M</span></div>
       <div class="g6">
@@ -296,11 +297,11 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
   <div class="top-bar"></div>
   <div class="sc">
     <div class="split" style="height:100%;">
-      <div class="sp-l-n" style="padding-left:310px;">
-        <div class="eyebrow">Module 02 — Temperature</div>
-        <div class="h2 tw" style="margin-bottom:12px;">The <span class="to">Danger</span> Zone</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:14px;">Between 5°C and 63°C, bacteria multiply at dangerous speed. At body temperature (37°C), some strains double every 20 minutes.</div>
-        <div class="rule-box">⚠ Never leave high-risk food in the danger zone for more than 2 hours cumulative.</div>
+      <div class="sp-l-o">
+        <div class="eyebrow" style="color:rgba(255,255,255,.7);">Module 02 — Temperature</div>
+        <div class="h2" style="color:#fff;margin-bottom:12px;">The <span style="color:var(--navy);">Danger</span> Zone</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.9);line-height:1.6;margin-bottom:14px;">Between 5°C and 63°C, bacteria multiply at dangerous speed. At body temperature (37°C), some strains double every 20 minutes.</div>
+        <div style="background:rgba(255,255,255,.15);border-left:3px solid #fff;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#fff;font-weight:600;">⚠ Never leave high-risk food in the danger zone for more than 2 hours cumulative.</div>
       </div>
       <div class="sp-r" style="justify-content:flex-start;padding-top:40px;">
         <div class="tz tz-hot"><div><div class="tz-big" style="color:var(--red);">≥ 63°C</div></div><div><div style="font-size:13px;font-weight:700;color:var(--navy);">Hot Holding / Reheating</div><div style="font-size:11px;color:var(--muted);">Core temp must reach 75°C before serving.</div></div></div>
@@ -320,8 +321,8 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S7: High-Risk Foods -->
 <div class="slide" data-index="6">
   <div class="top-bar"></div>
-  <div class="sc white">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 03</div>
       <div class="h2 tn" style="margin-bottom:14px;">High-Risk Foods in Airline Catering</div>
       <div class="g3">
@@ -341,8 +342,8 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S8: Control Measures -->
 <div class="slide" data-index="7">
   <div class="top-bar"></div>
-  <div class="sc grey">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad" style="background:var(--surface);">
       <div class="eyebrow">Module 04</div>
       <div class="h2 tn" style="margin-bottom:14px;">Control Measures — Food Hygiene &amp; Safety</div>
       <div class="g3">
@@ -361,15 +362,15 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S9: Cross Contamination -->
 <div class="slide" data-index="8">
   <div class="top-bar"></div>
-  <div class="sc navy">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 05</div>
-      <div class="h2 tw" style="margin-bottom:14px;">Cross-Contamination &amp; Prevention</div>
+      <div class="h2 tn" style="margin-bottom:14px;">Cross-Contamination &amp; Prevention</div>
       <div class="g2" style="gap:10px;">
-        <div class="card-d"><div class="cto">Direct Contact</div><div class="cbw">Raw food (e.g. meat juice) directly contacts ready-to-eat food.</div></div>
-        <div class="card-d"><div class="cto">Via Hands</div><div class="cbw">Touch raw food then handle RTE items without washing. Most common route in cabin crew scenarios.</div></div>
-        <div class="card-d"><div class="cto">Equipment Transfer</div><div class="cbw">Same tongs/trays/surfaces for raw and RTE without cleaning between uses.</div></div>
-        <div class="card-d"><div class="cto">Drip Contamination</div><div class="cbw">Liquids from high-risk items drip onto items stored below. Always store raw below RTE.</div></div>
+        <div class="card-w"><div class="cto">Direct Contact</div><div class="cb">Raw food (e.g. meat juice) directly contacts ready-to-eat food.</div></div>
+        <div class="card-w"><div class="cto">Via Hands</div><div class="cb">Touch raw food then handle RTE items without washing. Most common route in cabin crew scenarios.</div></div>
+        <div class="card-w"><div class="cto">Equipment Transfer</div><div class="cb">Same tongs/trays/surfaces for raw and RTE without cleaning between uses.</div></div>
+        <div class="card-w"><div class="cto">Drip Contamination</div><div class="cb">Liquids from high-risk items drip onto items stored below. Always store raw below RTE.</div></div>
       </div>
       <div class="fours">
         <div class="sb" style="background:var(--red);"><div class="sl">S</div><div class="sw">Separate</div><div class="sd">Keep raw and RTE foods apart at all times</div></div>
@@ -387,9 +388,9 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
   <div class="top-bar"></div>
   <div class="sc">
     <div class="split" style="height:100%;">
-      <div class="sp-l-o" style="padding-left:310px;overflow:auto;">
-        <div class="eyebrow eyebrow-w">Module 06</div>
-        <div class="h3 tw" style="margin-bottom:12px;">Personal Hygiene Standards</div>
+      <div class="sp-l-o" style="overflow:auto;">
+        <div class="eyebrow" style="color:rgba(255,255,255,.7);">Module 06</div>
+        <div class="h3" style="color:#fff;margin-bottom:12px;">Personal Hygiene Standards</div>
         <ul class="cl">
           <li><div class="tick">✓</div><span>Report illness before duty — never handle food when unwell</span></li>
           <li><div class="tick">✓</div><span>Nails short, clean, no polish or false nails during service</span></li>
@@ -423,17 +424,17 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S11: Temperature Table -->
 <div class="slide" data-index="10">
   <div class="top-bar"></div>
-  <div class="sc white">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 07</div>
       <div class="h2 tn" style="margin-bottom:14px;">Temperature Control — Requirements &amp; Actions</div>
       <table class="tbl" style="font-size:11px;">
-        <thead><tr><th>Zone</th><th>Temperature</th><th>Requirement</th><th style="color:#ffccaa;">Action if Exceeded</th></tr></thead>
+        <thead><tr><th>Zone</th><th>Temperature</th><th>Requirement</th><th style="color:#ffddbb;">Action if Exceeded</th></tr></thead>
         <tbody>
           <tr><td style="font-weight:700;">Frozen Storage</td><td><span class="tbadge" style="background:#e8f4ff;color:#0077CC;">≤ −18°C</span></td><td>Frozen items must remain frozen at all times</td><td style="color:var(--red);font-weight:600;">Remove from service; report to senior crew</td></tr>
-          <tr><td style="font-weight:700;">Chilled Storage</td><td><span class="tbadge" style="background:#e8f9f0;color:var(--green);">≤ 5°C</span></td><td>All high-risk chilled items; check on loading</td><td style="color:var(--red);font-weight:600;">Do not serve; quarantine; complete non-conformance report</td></tr>
+          <tr><td style="font-weight:700;">Chilled Storage</td><td><span class="tbadge" style="background:#edfff4;color:var(--green);">≤ 5°C</span></td><td>All high-risk chilled items; check on loading</td><td style="color:var(--red);font-weight:600;">Do not serve; quarantine; non-conformance report</td></tr>
           <tr><td style="font-weight:700;">⚠ Danger Zone</td><td><span class="tbadge" style="background:#fff3e8;color:var(--orange);">5°C – 63°C</span></td><td>Minimise time in this range; max 2 hours cumulative</td><td style="color:var(--red);font-weight:600;">Discard if 2-hour limit exceeded or in doubt</td></tr>
-          <tr><td style="font-weight:700;">Hot Holding</td><td><span class="tbadge" style="background:#fff0f0;color:var(--red);">≥ 63°C</span></td><td>Hot food must reach 75°C core before serving; hold at ≥63°C</td><td style="color:var(--red);font-weight:600;">Reheat fully or discard; never serve lukewarm hot food</td></tr>
+          <tr><td style="font-weight:700;">Hot Holding</td><td><span class="tbadge" style="background:#fff0f0;color:var(--red);">≥ 63°C</span></td><td>Hot food must reach 75°C core before serving</td><td style="color:var(--red);font-weight:600;">Reheat fully or discard; never serve lukewarm</td></tr>
           <tr><td style="font-weight:700;">Galley Ambient</td><td><span class="tbadge" style="background:var(--surface);color:var(--muted);">≤ 25°C</span></td><td>Keep service area cool; limit door-open time</td><td style="color:var(--red);font-weight:600;">Monitor; minimise exposure of perishables</td></tr>
         </tbody>
       </table>
@@ -446,24 +447,24 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 <!-- S12: Unfit Food -->
 <div class="slide" data-index="11">
   <div class="top-bar"></div>
-  <div class="sc navy">
-    <div class="pad" style="padding-left:310px;">
+  <div class="sc">
+    <div class="pad">
       <div class="eyebrow">Module 08 — Completing the Module</div>
-      <div class="h2 tw" style="margin-bottom:14px;">Unfit Food Procedure &amp; Key Messages</div>
+      <div class="h2 tn" style="margin-bottom:14px;">Unfit Food Procedure &amp; Key Messages</div>
       <div class="g2" style="gap:20px;align-items:start;">
         <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);margin-bottom:10px;">Food Complaint Procedure</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;">Food Complaint Procedure</div>
           <div class="stl">
-            <div class="sti"><div class="stn" style="background:var(--red);">1</div><div><strong style="color:#fff;">STOP</strong> <span style="color:rgba(255,255,255,.75);">— Remove the item from service immediately. Do not discard it.</span></div></div>
-            <div class="sti"><div class="stn" style="background:var(--orange);">2</div><div><strong style="color:#fff;">ISOLATE</strong> <span style="color:rgba(255,255,255,.75);">— Sealed bag: label with flight number, date, seat number, description.</span></div></div>
-            <div class="sti"><div class="stn" style="background:#0077CC;">3</div><div><strong style="color:#fff;">INFORM</strong> <span style="color:rgba(255,255,255,.75);">— Notify the Senior Cabin Crew Member / Purser immediately.</span></div></div>
-            <div class="sti"><div class="stn" style="background:var(--green);">4</div><div><strong style="color:#fff;">DOCUMENT</strong> <span style="color:rgba(255,255,255,.75);">— Complete a Catering Non-Conformance / Incident Report.</span></div></div>
-            <div class="sti"><div class="stn" style="background:#8B5CF6;">5</div><div><strong style="color:#fff;">PRESERVE</strong> <span style="color:rgba(255,255,255,.75);">— Retain for investigation. Hand to ground staff per SOPs.</span></div></div>
-            <div class="sti"><div class="stn" style="background:#06B6D4;">6</div><div><strong style="color:#fff;">REPORT</strong> <span style="color:rgba(255,255,255,.75);">— Submit to Food Safety / Quality team before end of duty.</span></div></div>
+            <div class="sti"><div class="stn" style="background:var(--red);">1</div><div><strong class="tn">STOP</strong> <span class="tm">— Remove the item from service immediately. Do not discard it.</span></div></div>
+            <div class="sti"><div class="stn" style="background:var(--orange);">2</div><div><strong class="tn">ISOLATE</strong> <span class="tm">— Sealed bag: label with flight number, date, seat number, description.</span></div></div>
+            <div class="sti"><div class="stn" style="background:#0077CC;">3</div><div><strong class="tn">INFORM</strong> <span class="tm">— Notify the Senior Cabin Crew Member / Purser immediately.</span></div></div>
+            <div class="sti"><div class="stn" style="background:var(--green);">4</div><div><strong class="tn">DOCUMENT</strong> <span class="tm">— Complete a Catering Non-Conformance / Incident Report.</span></div></div>
+            <div class="sti"><div class="stn" style="background:#8B5CF6;">5</div><div><strong class="tn">PRESERVE</strong> <span class="tm">— Retain for investigation. Hand to ground staff per SOPs.</span></div></div>
+            <div class="sti"><div class="stn" style="background:#06B6D4;">6</div><div><strong class="tn">REPORT</strong> <span class="tm">— Submit to Food Safety / Quality team before end of duty.</span></div></div>
           </div>
         </div>
         <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);margin-bottom:10px;">6 Non-Negotiable Key Messages</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;">6 Non-Negotiable Key Messages</div>
           <div class="km"><div class="km-ic">🙌</div><div class="km-tx"><span class="km-kw">Wash your hands.</span> Before food handling, after the toilet, after touching raw food.</div></div>
           <div class="km"><div class="km-ic">🌡️</div><div class="km-tx"><span class="km-kw">Control temperature.</span> Never leave high-risk food in the danger zone (5°C–63°C) for more than 2 hours.</div></div>
           <div class="km"><div class="km-ic">⚠️</div><div class="km-tx"><span class="km-kw">Prevent cross-contamination.</span> Separate raw from RTE. Sanitise surfaces. Keep equipment clean.</div></div>
@@ -493,7 +494,6 @@ html,body{height:100%;background:#111;font-family:'Nunito',sans-serif;overflow:h
 </div><!-- #app -->
 
 <script>
-// Scale stage to fit viewport
 function scaleStage(){
   const s=document.getElementById('stage');
   const sx=(window.innerWidth-16)/1280, sy=(window.innerHeight-72)/720;
@@ -503,7 +503,6 @@ function scaleStage(){
 }
 scaleStage(); window.addEventListener('resize',scaleStage);
 
-// Slide controller
 (function(){
   const slides=Array.from(document.querySelectorAll('.slide'));
   const dotsEl=document.getElementById('dots');
@@ -517,8 +516,7 @@ scaleStage(); window.addEventListener('resize',scaleStage);
   function goTo(n){
     slides[cur].classList.remove('active');
     document.querySelectorAll('.dot')[cur].classList.remove('active');
-    cur=n;
-    slides[cur].classList.add('active');
+    cur=n; slides[cur].classList.add('active');
     document.querySelectorAll('.dot')[cur].classList.add('active');
     btnP.disabled=cur===0; btnN.disabled=cur===slides.length-1;
     fill.style.width=((cur+1)/slides.length*100)+'%';
@@ -538,13 +536,12 @@ scaleStage(); window.addEventListener('resize',scaleStage);
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const CW=260, CH=360;
-const WALK_SPEED=0.018, CHAR_SCALE=1.6, FLOOR_Y=-0.85;
-const BMS=62, XFT=0.35;
-
-// Camera math: vFOV=40°, z=4, center_y=0.51
-// half_h = tan(20°)*4 = 1.456 → visible -0.946 to 1.966 → full character in frame
-const CAM_Y=0.51, CAM_Z=4.0, CAM_FOV=40;
+// Canvas: 300×440px, bottom-right of stage (right:16px)
+// Camera: vFOV=42°, z=4, center_y=0.51
+// half_h = tan(21°)*4 = 1.54  → visible y: -1.03 to +2.05
+// Character feet at -0.85 ✓  head at ~1.87 ✓  full body in frame with ~25px margin top/bottom
+const CW=300, CH=440, STAGE_W=1280, STAGE_H=720, CANVAS_RIGHT=16;
+const CHAR_SCALE=1.6, FLOOR_Y=-0.85, BMS=62, XFT=0.35;
 
 const NARRATIONS=[
   "Welcome! I'm your food safety trainer. Let's make sure every passenger stays safe.",
@@ -561,13 +558,10 @@ const NARRATIONS=[
   "If you find unfit food — stop, isolate, inform, document. Never throw the evidence away."
 ];
 
-const TARGET_X=[-0.5,0.5,-0.45,0.5,-0.45,0.5,-0.45,0.5,-0.45,0.5,-0.45,0.5];
-
-let scene,camera,renderer,mixer,clock;
-let idle,walk,talk,cur;
+let scene, camera, renderer, mixer, clock;
+let idle, talk, cur;
 let root=null, head=null;
-let wTarget=null, onArr=null;
-let talking=false, tTo=null, pTo=null;
+let talking=false, tTo=null;
 
 const cvs=document.getElementById('char-canvas');
 const bub=document.getElementById('speech-bubble');
@@ -580,11 +574,12 @@ function init(){
   renderer.setSize(CW,CH);
   renderer.setClearColor(0x000000,0);
   scene=new THREE.Scene();
-  camera=new THREE.PerspectiveCamera(CAM_FOV,CW/CH,0.1,100);
-  camera.position.set(0,CAM_Y,CAM_Z);
-  camera.lookAt(0,CAM_Y,0);
+  camera=new THREE.PerspectiveCamera(42,CW/CH,0.1,100);
+  camera.position.set(0,0.51,4);
+  camera.lookAt(0,0.51,0);
   scene.add(new THREE.AmbientLight(0xffffff,1.5));
-  const dl=new THREE.DirectionalLight(0xffffff,1.2); dl.position.set(2,4,3); scene.add(dl);
+  const dl=new THREE.DirectionalLight(0xffffff,1.2);
+  dl.position.set(2,4,3); scene.add(dl);
   clock=new THREE.Clock();
   loadChar();
   animate();
@@ -594,16 +589,16 @@ function loadChar(){
   new GLTFLoader().load('./character_animated.glb',
     gltf=>{
       root=gltf.scene;
-      root.scale.setScalar(CHAR_SCALE);
+      // Scale and face LEFT (toward slide content)
+      root.scale.set(-CHAR_SCALE, CHAR_SCALE, CHAR_SCALE);
       root.position.set(0,FLOOR_Y,0);
       scene.add(root);
       head=root.getObjectByName('Head');
       mixer=new THREE.AnimationMixer(root);
       const f=n=>THREE.AnimationClip.findByName(gltf.animations,n);
       idle=mixer.clipAction(f('Idle'));
-      walk=mixer.clipAction(f('Walk'));
       talk=mixer.clipAction(f('Talk'));
-      [idle,walk,talk].forEach(a=>{a.setLoop(THREE.LoopRepeat,Infinity);a.clampWhenFinished=false;});
+      [idle,talk].forEach(a=>{a.setLoop(THREE.LoopRepeat,Infinity);a.clampWhenFinished=false;});
       idle.play(); cur=idle;
       ld.style.display='none';
     },
@@ -619,16 +614,9 @@ function loadChar(){
 
 function xfade(to){
   if(!to||to===cur)return;
-  to.reset();to.play();
+  to.reset(); to.play();
   cur.crossFadeTo(to,XFT,true);
   cur=to;
-}
-
-function walkTo(tx,cb){
-  if(!root){if(cb)cb();return;}
-  wTarget=THREE.MathUtils.clamp(tx,-0.85,0.85);
-  onArr=cb||null;
-  xfade(walk);
 }
 
 function speak(text){
@@ -643,52 +631,36 @@ function speak(text){
 }
 
 window.presenterGoToSlide=function(i){
-  if(!root)return;
   if(tTo)clearTimeout(tTo);
-  if(pTo)clearTimeout(pTo);
   bub.classList.remove('vis'); talking=false;
-  walkTo(TARGET_X[i]??0,()=>{
-    speak(NARRATIONS[i]);
-    pTo=setTimeout(()=>{
-      const dir=Math.random()>.5?1:-1;
-      const px=THREE.MathUtils.clamp((TARGET_X[i]??0)+dir*0.4,-0.85,0.85);
-      walkTo(px,()=>walkTo(TARGET_X[i]??0,()=>xfade(idle)));
-    },NARRATIONS[i].length*BMS+1500);
-  });
+  if(root) xfade(idle);
+  // Brief pause then talk
+  setTimeout(()=>speak(NARRATIONS[i]||''),300);
 };
 
 function updateBubble(){
   if(!head||!bub.classList.contains('vis'))return;
   const wp=new THREE.Vector3();
-  head.getWorldPosition(wp); wp.y+=0.15;
+  head.getWorldPosition(wp);
+  // Project head to canvas-local NDC
   const ndc=wp.clone().project(camera);
-  // canvas is at left:16px, bottom:0 within the 1280×720 stage
-  const stageH=720;
-  const canvasTop=stageH-CH;
-  const cx=16+(ndc.x*0.5+0.5)*CW;
-  const cy=canvasTop+(1-(ndc.y*0.5+0.5))*CH;
-  const bw=bub.offsetWidth||220, bh=bub.offsetHeight||60;
-  bub.style.left=Math.max(8,Math.min(cx-bw/2,1280-bw-8))+'px';
-  bub.style.top =Math.max(8,Math.min(cy-bh-14,stageH-bh-40))+'px';
+  // Canvas is at right:CANVAS_RIGHT, bottom:0 in the 1280×720 stage
+  const canvasLeft=STAGE_W-CANVAS_RIGHT-CW;  // left edge of canvas in stage coords
+  const canvasTop=STAGE_H-CH;                 // top edge of canvas in stage coords
+  const headStageY=canvasTop+(1-(ndc.y*0.5+0.5))*CH;
+  // Place bubble to the LEFT of canvas with right-pointing tail
+  const bw=bub.offsetWidth||240;
+  const bh=bub.offsetHeight||60;
+  const gap=14;
+  const bLeft=Math.max(8, canvasLeft-bw-gap);
+  const bTop=Math.max(8, Math.min(headStageY-bh*0.4, STAGE_H-bh-40));
+  bub.style.left=bLeft+'px';
+  bub.style.top=bTop+'px';
 }
 
 function animate(){
   requestAnimationFrame(animate);
-  const d=clock.getDelta();
-  if(mixer)mixer.update(d);
-  if(root&&wTarget!==null){
-    const diff=wTarget-root.position.x;
-    if(Math.abs(diff)<WALK_SPEED*2){
-      root.position.x=wTarget; wTarget=null;
-      const cb=onArr; onArr=null;
-      if(!talking)xfade(idle);
-      if(cb)cb();
-    } else {
-      const dir=Math.sign(diff);
-      root.position.x+=dir*WALK_SPEED;
-      root.scale.x=-dir*CHAR_SCALE;
-    }
-  }
+  if(mixer)mixer.update(clock.getDelta());
   updateBubble();
   renderer.render(scene,camera);
 }
