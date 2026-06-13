@@ -1041,7 +1041,8 @@ html, body {
   box-shadow: 0 4px 24px rgba(255,102,0,0.45);
   transition: transform .15s, box-shadow .15s;
 }
-.begin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,102,0,0.55); }
+.begin-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,102,0,0.55); }
+.begin-btn:disabled { opacity: 0.45; cursor: wait; }
 .begin-loading {
   margin-top: 18px; font-size: 12px; font-weight: 600;
   color: rgba(255,255,255,0.35); letter-spacing: 0.06em;
@@ -1382,7 +1383,8 @@ html, body {
             <div class="temp-growth-label" id="tempZone">⚠ Danger Zone</div>
           </div>
         </div>
-        <canvas id="bacteriaGraph" width="480" height="90" style="width:100%;height:90px;display:block;margin-top:10px;border-radius:6px;background:var(--surface);"></canvas>
+        <canvas id="bacteriaGraph" width="480" height="100" style="width:100%;height:100px;display:block;margin-top:10px;border-radius:6px 6px 0 0;background:var(--surface);"></canvas>
+        <div id="graph-desc" style="background:var(--surface);border-radius:0 0 6px 6px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--muted);border-top:1px solid var(--border);">At 37°C bacteria double every 20 minutes — a single cell becomes millions within hours.</div>
       </div>
     </div>
   </div>
@@ -1713,7 +1715,7 @@ html, body {
   <div class="begin-logo">easyJet</div>
   <div class="begin-title">Food Safety Training</div>
   <div class="begin-sub">Airline Safety &amp; Ground Operations</div>
-  <button class="begin-btn">▶ Begin Training</button>
+  <button class="begin-btn" id="begin-btn" disabled>▶ Begin Training</button>
   <div class="begin-loading" id="begin-loading"></div>
 </div>
 
@@ -1754,10 +1756,11 @@ html, body {
 
   // Temperature slider handled by module script
 
-  // Begin overlay — user gesture required for audio autoplay
+  // Begin overlay — fires only from the button (not the whole overlay)
   const overlay = document.getElementById('begin-overlay');
-  if (overlay) {
-    overlay.addEventListener('click', () => {
+  const beginBtnEl = document.getElementById('begin-btn');
+  if (beginBtnEl) {
+    beginBtnEl.addEventListener('click', () => {
       overlay.classList.add('hidden');
       setTimeout(() => { overlay.style.display = 'none'; }, 450);
       // Trigger first narration via the module's presenter function
@@ -1904,9 +1907,10 @@ async function generateSpeech(text) {
   return URL.createObjectURL(await res.blob());
 }
 
-// Pre-generate all clips sequentially in the background
+// Pre-generate clips — enable Begin as soon as clip 0 is ready
 (async () => {
-  const loadEl = document.getElementById('begin-loading');
+  const loadEl  = document.getElementById('begin-loading');
+  const beginBtn = document.getElementById('begin-btn');
   for (let i = 0; i < NARRATIONS.length; i++) {
     if (loadEl) loadEl.textContent = `Preparing voice… ${i + 1} / ${NARRATIONS.length}`;
     try {
@@ -1914,9 +1918,14 @@ async function generateSpeech(text) {
     } catch (e) {
       console.warn(`Audio clip ${i} failed:`, e);
     }
+    // Enable button after clip 0 attempt (success or fail)
+    if (i === 0 && beginBtn) {
+      beginBtn.disabled = false;
+      if (loadEl) loadEl.textContent = audioCacheUrls[0] ? 'Voice ready — click to begin' : 'Ready (voice unavailable)';
+    }
     await new Promise(r => setTimeout(r, 300));
   }
-  if (loadEl) loadEl.textContent = 'Voice ready ✓';
+  if (loadEl) loadEl.textContent = 'All voice clips ready ✓';
 })();
 
 function stopAudio() {
@@ -1989,13 +1998,15 @@ function updateBubble() {
 }
 window.addEventListener('resize', updateBubble);
 
-/* ── Bacteria growth graph ───────────────────────────────── */
+/* ── Bacteria growth graph — static, redraws on slider ──── */
 const bgCanvas = document.getElementById('bacteriaGraph');
 const bgCtx    = bgCanvas ? bgCanvas.getContext('2d') : null;
-let bgDoublingMins = 20; // default at 37°C
-let bgOffset = 0;        // scrolling phase
+let bgDoublingMins = 20;
+let bgAbove63 = false;
+let bgDirty = true;
 
 function doublingMinsForTemp(t) {
+  bgAbove63 = t > 63;
   if (t <= -18) return Infinity;
   if (t <= 5)   return 480;
   if (t <= 10)  return 180;
@@ -2004,77 +2015,81 @@ function doublingMinsForTemp(t) {
   if (t <= 37)  return 20;
   if (t <= 45)  return 25;
   if (t <= 60)  return 60;
-  return Infinity; // ≥ 63 — bacteria dying
+  return Infinity;
 }
 
 function drawBacteriaGraph() {
-  if (!bgCtx) return;
+  if (!bgCtx || !bgDirty) return;
+  bgDirty = false;
   const W = bgCanvas.width, H = bgCanvas.height;
   bgCtx.clearRect(0, 0, W, H);
 
-  const isDead = bgDoublingMins === Infinity;
+  const isFrozen = bgDoublingMins === Infinity && !bgAbove63;
+  const isDying  = bgDoublingMins === Infinity && bgAbove63;
+  const color = isFrozen ? '#2196F3' : isDying ? '#00A651' : bgDoublingMins > 120 ? '#00A651' : bgDoublingMins > 40 ? '#FF9800' : '#D0021B';
 
   // Background
   bgCtx.fillStyle = '#F5F5F5';
   bgCtx.fillRect(0, 0, W, H);
 
-  // Grid lines
-  bgCtx.strokeStyle = 'rgba(0,0,0,0.06)';
+  // Grid
+  bgCtx.strokeStyle = 'rgba(0,0,0,0.07)';
   bgCtx.lineWidth = 1;
-  for (let y = 0; y <= H; y += H / 4) {
+  for (let y = H / 4; y < H; y += H / 4) {
     bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(W, y); bgCtx.stroke();
   }
 
   // Curve
-  const hours = 4; // x-axis = 4 hours
-  const color = isDead ? '#00A651' : bgDoublingMins > 120 ? '#00A651' : bgDoublingMins > 40 ? '#FF9800' : '#D0021B';
   bgCtx.beginPath();
   bgCtx.strokeStyle = color;
   bgCtx.lineWidth = 2.5;
-  const scrollSpeed = isDead ? 0 : Math.max(0, (120 - bgDoublingMins) / 120);
-
   for (let px = 0; px <= W; px++) {
-    const t = (px / W) * hours + bgOffset * scrollSpeed * 0.003;
+    const t = (px / W) * 4; // 4-hour window
     let count;
-    if (isDead) {
-      count = Math.max(0, 1 - (t / hours) * 0.8); // declining
-    } else {
-      const doublings = (t * 60) / bgDoublingMins;
-      count = Math.min(1, Math.pow(2, doublings) / Math.pow(2, (hours * 60) / bgDoublingMins));
+    if (isFrozen)      count = 0.04;
+    else if (isDying)  count = Math.max(0.02, 1 - (t / 4) * 0.95);
+    else {
+      const maxD = (4 * 60) / bgDoublingMins;
+      count = Math.min(1, Math.pow(2, (t * 60) / bgDoublingMins) / Math.pow(2, maxD));
     }
-    const y = H - 6 - count * (H - 16);
+    const y = H - 6 - count * (H - 14);
     px === 0 ? bgCtx.moveTo(px, y) : bgCtx.lineTo(px, y);
   }
   bgCtx.stroke();
 
   // Fill under curve
   bgCtx.lineTo(W, H); bgCtx.lineTo(0, H); bgCtx.closePath();
-  bgCtx.fillStyle = color + '22';
+  bgCtx.fillStyle = color + '28';
   bgCtx.fill();
 
-  // Label
-  bgCtx.fillStyle = color;
-  bgCtx.font = 'bold 11px Nunito, sans-serif';
-  bgCtx.fillText(isDead ? 'Bacteria dying ✓' : `Doubling every ${bgDoublingMins} min`, 10, 16);
-  bgCtx.fillStyle = 'rgba(0,0,0,0.3)';
-  bgCtx.font = '10px Nunito, sans-serif';
-  bgCtx.fillText('0h', 6, H - 4);
-  bgCtx.fillText('4h', W - 18, H - 4);
-
-  bgOffset++;
+  // Axis time labels
+  bgCtx.fillStyle = 'rgba(0,0,0,0.28)';
+  bgCtx.font = '10px system-ui, sans-serif';
+  bgCtx.fillText('0 hrs', 4, H - 4);
+  bgCtx.fillText('2 hrs', W / 2 - 12, H - 4);
+  bgCtx.fillText('4 hrs', W - 26, H - 4);
 }
 
 /* ── Temperature slider ──────────────────────────────────── */
+const graphDescs = {
+  frozen:  'Bacteria are dormant — frozen storage halts growth entirely.',
+  chilled: 'Very slow growth. Safe for short-term storage. Always check temps on loading.',
+  mild:    'Danger Zone begins. Growth accelerates as temperature rises above 5°C.',
+  rapid:   'Rapid growth. At 37°C bacteria double every 20 minutes — millions within hours.',
+  peak:    'Peak danger. Any high-risk food here for over 2 hours must be discarded.',
+  dying:   'Bacteria begin dying above 63°C. Maintain this temperature throughout hot service.'
+};
+
 function tempInfo(t) {
-  if (t <= -18) return { rate: 'Dormant',       zone: '❄ Frozen — safe',       color: '#2196F3' };
-  if (t <= 5)   return { rate: 'Very slow',      zone: '✓ Safe — chilled',       color: '#00A651' };
-  if (t <= 20)  return { rate: '×2 / 2–3 hrs',   zone: '⚠ Danger Zone',          color: '#FF9800' };
-  if (t <= 37)  return { rate: `×2 / ${Math.round(20 + (37-t)*1.5)} min`, zone: '⚠ Danger Zone — RAPID', color: '#D0021B' };
-  if (t <= 63)  return { rate: '×2 / 15–30 min', zone: '⚠ Danger Zone',          color: '#D0021B' };
-  return { rate: 'Bacteria dying', zone: '✓ Safe — hot hold ≥63°C', color: '#00A651' };
+  if (t <= -18) return { rate: 'Dormant',        zone: '❄ Frozen — safe',        color: '#2196F3', desc: graphDescs.frozen  };
+  if (t <= 5)   return { rate: 'Very slow',       zone: '✓ Safe — chilled',        color: '#00A651', desc: graphDescs.chilled };
+  if (t <= 20)  return { rate: '×2 / 2–3 hrs',    zone: '⚠ Danger Zone',           color: '#FF9800', desc: graphDescs.mild    };
+  if (t <= 63)  return { rate: `×2 / ${Math.round(20 + Math.max(0, 37-t)*1.5)} min`, zone: '⚠ Danger Zone — RAPID', color: '#D0021B', desc: t <= 37 ? graphDescs.rapid : graphDescs.peak };
+  return          { rate: 'Bacteria dying',  zone: '✓ Safe — hot hold ≥63°C', color: '#00A651', desc: graphDescs.dying  };
 }
 
 const slider = document.getElementById('tempSlider');
+const graphDesc = document.getElementById('graph-desc');
 if (slider) {
   function onSlider() {
     const t = parseInt(slider.value);
@@ -2084,8 +2099,9 @@ if (slider) {
     document.getElementById('tempRate').textContent = info.rate;
     document.getElementById('tempRate').style.color = info.color;
     document.getElementById('tempZone').textContent = info.zone;
+    if (graphDesc) { graphDesc.textContent = info.desc; graphDesc.style.color = info.color; }
     bgDoublingMins = doublingMinsForTemp(t);
-    bgOffset = 0;
+    bgDirty = true;
   }
   slider.addEventListener('input', onSlider);
   onSlider();
