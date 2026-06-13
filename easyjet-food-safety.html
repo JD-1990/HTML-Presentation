@@ -1890,7 +1890,8 @@ loader.load('./character_animated.glb', (gltf) => {
 /* ── ElevenLabs TTS ──────────────────────────────────────── */
 const ELEVENLABS_MODEL    = 'eleven_multilingual_v2';
 const ELEVENLABS_ENDPOINT = 'https://api.elevenlabs.io/v1/text-to-speech';
-const audioCacheUrls = new Array(NARRATIONS.length).fill(null);
+const audioCacheUrls = new Array(NARRATIONS.length).fill(undefined);
+const hintAudioUrls  = new Array(NARRATIONS.length).fill(undefined);
 let currentAudio = null;
 
 async function generateSpeech(text) {
@@ -1907,27 +1908,36 @@ async function generateSpeech(text) {
   return URL.createObjectURL(await res.blob());
 }
 
-// On-demand audio — fetch only when needed, cache for revisits
 async function ensureAudio(i) {
-  if (audioCacheUrls[i] !== null && audioCacheUrls[i] !== undefined) return audioCacheUrls[i];
-  try {
-    audioCacheUrls[i] = await generateSpeech(NARRATIONS[i].text);
-  } catch (e) {
-    console.warn(`Audio clip ${i} failed:`, e);
-    audioCacheUrls[i] = null;
-  }
+  if (audioCacheUrls[i] !== undefined) return audioCacheUrls[i];
+  try { audioCacheUrls[i] = await generateSpeech(NARRATIONS[i].text); }
+  catch (e) { console.warn(`Clip ${i} failed:`, e); audioCacheUrls[i] = null; }
   return audioCacheUrls[i];
 }
 
-function stopAudio() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.src = '';
-    currentAudio = null;
-  }
+async function ensureHintAudio(i) {
+  if (!NARRATIONS[i].hint) return null;
+  if (hintAudioUrls[i] !== undefined) return hintAudioUrls[i];
+  try { hintAudioUrls[i] = await generateSpeech(NARRATIONS[i].hint); }
+  catch (e) { console.warn(`Hint ${i} failed:`, e); hintAudioUrls[i] = null; }
+  return hintAudioUrls[i];
 }
 
-/* ── Slide trigger — on-demand audio ────────────────────── */
+function stopAudio() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.src = ''; currentAudio = null; }
+}
+
+function playAudio(url, onEnd) {
+  if (!url) { tTo = setTimeout(onEnd, BUBBLE_DURATION); return; }
+  const audio = new Audio(url);
+  audio.volume = 1.0;
+  currentAudio = audio;
+  audio.addEventListener('ended', () => { currentAudio = null; onEnd(); });
+  audio.addEventListener('error', () => { currentAudio = null; tTo = setTimeout(onEnd, BUBBLE_DURATION); });
+  audio.play().catch(() => { tTo = setTimeout(onEnd, BUBBLE_DURATION); });
+}
+
+/* ── Slide trigger — narration then hint, both voiced ────── */
 window.presenterGoToSlide = function(i) {
   if (tTo) clearTimeout(tTo);
   stopAudio();
@@ -1938,55 +1948,52 @@ window.presenterGoToSlide = function(i) {
   if (!n) return;
 
   setTimeout(() => {
-    // Show bubble and talk animation immediately
+    // Phase 1 — show narration bubble immediately, fetch + play audio
     talking = true;
     if (mixer && talk) xfade(talk);
     bub.textContent = n.text;
     bub.classList.add('vis');
     updateBubble();
 
-    function afterNarration() {
-      if (n.hint) {
-        bub.textContent = n.hint;
-        updateBubble();
-        if (mixer && idle) xfade(idle);
-        talking = false;
-        tTo = setTimeout(() => { bub.classList.remove('vis'); }, BUBBLE_DURATION);
-      } else {
+    function startHint() {
+      if (!n.hint) {
+        // No hint — just hide
         bub.classList.remove('vis');
         talking = false;
         if (mixer && idle) xfade(idle);
+        return;
       }
+      // Phase 2 — switch bubble to hint, fetch + play hint audio
+      bub.textContent = n.hint;
+      updateBubble();
+      if (mixer && idle) xfade(idle);
+      talking = false;
+      ensureHintAudio(i).then(url => {
+        if (bub.textContent !== n.hint) return; // navigated away
+        playAudio(url, () => { bub.classList.remove('vis'); });
+      });
     }
 
-    // Fetch audio then play (bubble already visible)
     ensureAudio(i).then(url => {
-      if (!talking) return; // user navigated away while fetching
-      if (url) {
-        const audio = new Audio(url);
-        audio.volume = 1.0;
-        currentAudio = audio;
-        audio.addEventListener('ended', () => { currentAudio = null; afterNarration(); });
-        audio.addEventListener('error', () => { currentAudio = null; tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
-        audio.play().catch(() => { tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
-      } else {
-        tTo = setTimeout(afterNarration, BUBBLE_DURATION);
+      if (!talking) return;
+      playAudio(url, startHint);
+      // Pre-fetch next slide's narration + hint in background
+      if (i + 1 < NARRATIONS.length) {
+        ensureAudio(i + 1).catch(() => {});
+        ensureHintAudio(i + 1).catch(() => {});
       }
     });
-
-    // Pre-fetch next slide in background while user reads this one
-    if (i + 1 < NARRATIONS.length) ensureAudio(i + 1).catch(() => {});
   }, 350);
 };
 
-/* ── Position bubble — slightly closer & lower ───────────── */
+/* ── Position bubble — closer to character ───────────────── */
 function updateBubble() {
   const bw = bub.offsetWidth  || 260;
   const bh = bub.offsetHeight || 80;
   const canvasLeft = STAGE_W - CANVAS_RIGHT - CW;
   const canvasTop  = STAGE_H - CH;
-  const left = Math.max(8, canvasLeft - bw - 4);   // 4px gap (was 10)
-  const top  = Math.max(8, Math.min(canvasTop + 32, STAGE_H - bh - 40)); // +32 (was +20)
+  const left = Math.max(8, canvasLeft - bw + 14);  // overlap edge by 14px
+  const top  = Math.max(8, Math.min(canvasTop + 32, STAGE_H - bh - 40));
   bub.style.left = left + 'px';
   bub.style.top  = top  + 'px';
 }
