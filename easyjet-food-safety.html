@@ -1715,8 +1715,8 @@ html, body {
   <div class="begin-logo">easyJet</div>
   <div class="begin-title">Food Safety Training</div>
   <div class="begin-sub">Airline Safety &amp; Ground Operations</div>
-  <button class="begin-btn" id="begin-btn" disabled>▶ Begin Training</button>
-  <div class="begin-loading" id="begin-loading"></div>
+  <button class="begin-btn" id="begin-btn">▶ Begin Training</button>
+  <div class="begin-loading" id="begin-loading">Click to start — voice loads as you go</div>
 </div>
 
 <div class="nav">
@@ -1756,7 +1756,7 @@ html, body {
 
   // Temperature slider handled by module script
 
-  // Begin overlay — fires only from the button (not the whole overlay)
+  // Begin overlay
   const overlay = document.getElementById('begin-overlay');
   const beginBtnEl = document.getElementById('begin-btn');
   if (beginBtnEl) {
@@ -1907,26 +1907,17 @@ async function generateSpeech(text) {
   return URL.createObjectURL(await res.blob());
 }
 
-// Pre-generate clips — enable Begin as soon as clip 0 is ready
-(async () => {
-  const loadEl  = document.getElementById('begin-loading');
-  const beginBtn = document.getElementById('begin-btn');
-  for (let i = 0; i < NARRATIONS.length; i++) {
-    if (loadEl) loadEl.textContent = `Preparing voice… ${i + 1} / ${NARRATIONS.length}`;
-    try {
-      audioCacheUrls[i] = await generateSpeech(NARRATIONS[i].text);
-    } catch (e) {
-      console.warn(`Audio clip ${i} failed:`, e);
-    }
-    // Enable button after clip 0 attempt (success or fail)
-    if (i === 0 && beginBtn) {
-      beginBtn.disabled = false;
-      if (loadEl) loadEl.textContent = audioCacheUrls[0] ? 'Voice ready — click to begin' : 'Ready (voice unavailable)';
-    }
-    await new Promise(r => setTimeout(r, 300));
+// On-demand audio — fetch only when needed, cache for revisits
+async function ensureAudio(i) {
+  if (audioCacheUrls[i] !== null && audioCacheUrls[i] !== undefined) return audioCacheUrls[i];
+  try {
+    audioCacheUrls[i] = await generateSpeech(NARRATIONS[i].text);
+  } catch (e) {
+    console.warn(`Audio clip ${i} failed:`, e);
+    audioCacheUrls[i] = null;
   }
-  if (loadEl) loadEl.textContent = 'All voice clips ready ✓';
-})();
+  return audioCacheUrls[i];
+}
 
 function stopAudio() {
   if (currentAudio) {
@@ -1936,45 +1927,7 @@ function stopAudio() {
   }
 }
 
-/* ── Speak — audio-synced with two-phase bubble ──────────── */
-function speak(text, hint, slideIndex) {
-  if (!text) return;
-  if (tTo) clearTimeout(tTo);
-  stopAudio();
-  talking = true;
-  if (mixer && talk) xfade(talk);
-  bub.textContent = text;
-  bub.classList.add('vis');
-  updateBubble();
-
-  function afterNarration() {
-    if (hint) {
-      bub.textContent = hint;
-      updateBubble();
-      if (mixer && idle) xfade(idle);
-      talking = false;
-      tTo = setTimeout(() => { bub.classList.remove('vis'); }, BUBBLE_DURATION);
-    } else {
-      bub.classList.remove('vis');
-      talking = false;
-      if (mixer && idle) xfade(idle);
-    }
-  }
-
-  const url = (slideIndex != null) ? audioCacheUrls[slideIndex] : null;
-  if (url) {
-    const audio = new Audio(url);
-    audio.volume = 1.0;
-    currentAudio = audio;
-    audio.addEventListener('ended', () => { currentAudio = null; afterNarration(); });
-    audio.addEventListener('error', () => { currentAudio = null; tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
-    audio.play().catch(() => { tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
-  } else {
-    tTo = setTimeout(afterNarration, BUBBLE_DURATION);
-  }
-}
-
-/* ── Slide trigger (called by navigation script) ─────────── */
+/* ── Slide trigger — on-demand audio ────────────────────── */
 window.presenterGoToSlide = function(i) {
   if (tTo) clearTimeout(tTo);
   stopAudio();
@@ -1982,7 +1935,48 @@ window.presenterGoToSlide = function(i) {
   talking = false;
   if (mixer && idle) xfade(idle);
   const n = NARRATIONS[i];
-  if (n) setTimeout(() => speak(n.text, n.hint, i), 350);
+  if (!n) return;
+
+  setTimeout(() => {
+    // Show bubble and talk animation immediately
+    talking = true;
+    if (mixer && talk) xfade(talk);
+    bub.textContent = n.text;
+    bub.classList.add('vis');
+    updateBubble();
+
+    function afterNarration() {
+      if (n.hint) {
+        bub.textContent = n.hint;
+        updateBubble();
+        if (mixer && idle) xfade(idle);
+        talking = false;
+        tTo = setTimeout(() => { bub.classList.remove('vis'); }, BUBBLE_DURATION);
+      } else {
+        bub.classList.remove('vis');
+        talking = false;
+        if (mixer && idle) xfade(idle);
+      }
+    }
+
+    // Fetch audio then play (bubble already visible)
+    ensureAudio(i).then(url => {
+      if (!talking) return; // user navigated away while fetching
+      if (url) {
+        const audio = new Audio(url);
+        audio.volume = 1.0;
+        currentAudio = audio;
+        audio.addEventListener('ended', () => { currentAudio = null; afterNarration(); });
+        audio.addEventListener('error', () => { currentAudio = null; tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
+        audio.play().catch(() => { tTo = setTimeout(afterNarration, BUBBLE_DURATION); });
+      } else {
+        tTo = setTimeout(afterNarration, BUBBLE_DURATION);
+      }
+    });
+
+    // Pre-fetch next slide in background while user reads this one
+    if (i + 1 < NARRATIONS.length) ensureAudio(i + 1).catch(() => {});
+  }, 350);
 };
 
 /* ── Position bubble — slightly closer & lower ───────────── */
