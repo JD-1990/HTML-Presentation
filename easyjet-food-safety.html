@@ -1763,6 +1763,13 @@ const CW = 280, CH = 480;   // canvas px — generous size for full-body visibil
 const STAGE_W = 1280, STAGE_H = 720, CANVAS_RIGHT = 16;
 const CHAR_SCALE = 1.65;
 const FLOOR_Y    = -0.9;
+// The "Talking" clip's baked head/gaze pose points up and to the left of
+// camera — nudge the whole character to compensate. Positive yaw rotates
+// her to her own left (i.e. toward camera-right); tweak and re-test live.
+const CHAR_YAW_DEG = 12;
+// Raises the camera's look-at point to better meet her upward gaze,
+// instead of tilting her whole body (which would look unnatural).
+const CAMERA_LOOKAT_Y_OFFSET = 0.18;
 const BUBBLE_DURATION = 6000;  // 6 s
 
 /* ── Narrations per slide (0-indexed) ────────────────────── */
@@ -1815,7 +1822,7 @@ const scene = new THREE.Scene();
    Any Mixamo character at CHAR_SCALE=1.1 fits well within that. */
 const camera = new THREE.PerspectiveCamera(52, CW / CH, 0.1, 100);
 camera.position.set(0, 0.35, 5);
-camera.lookAt(0, 0.35, 0);
+camera.lookAt(0, 0.35 + CAMERA_LOOKAT_Y_OFFSET, 0);
 
 /* Lighting */
 const ambient = new THREE.AmbientLight(0xffffff, 1.4);
@@ -1882,6 +1889,7 @@ loader.load('./character_final.glb', (gltf) => {
   root = gltf.scene;
   root.scale.set(-CHAR_SCALE, CHAR_SCALE, CHAR_SCALE);  // mirror → faces left
   root.position.set(0, FLOOR_Y, 0);
+  root.rotation.y = THREE.MathUtils.degToRad(CHAR_YAW_DEG);
   scene.add(root);
 
   mixer = new THREE.AnimationMixer(root);
