@@ -183,42 +183,13 @@ html, body {
   z-index: 2;
 }
 
-.s1-tag {
-  display: inline-block;
-  background: var(--orange);
-  color: var(--white);
-  font-size: 11px; font-weight: 800;
-  letter-spacing: 0.15em; text-transform: uppercase;
-  padding: 6px 14px; border-radius: 3px;
-  margin-bottom: 24px;
-}
-
 .s1-title {
-  font-size: 72px; font-weight: 900;
-  line-height: 1.0; letter-spacing: -0.03em;
+  font-size: 56px; font-weight: 900;
+  line-height: 1.15; letter-spacing: -0.03em;
   color: var(--navy);
-  margin-bottom: 8px;
+  max-width: 640px;
 }
 .s1-title span { color: var(--orange); }
-
-.s1-subtitle {
-  font-size: 28px; font-weight: 700;
-  color: var(--muted);
-  letter-spacing: -0.01em;
-  margin-bottom: 48px;
-}
-
-.s1-modules {
-  display: flex; gap: 8px; flex-wrap: wrap;
-  max-width: 680px;
-}
-.s1-mod {
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 12px; font-weight: 600;
-  padding: 7px 14px; border-radius: 3px;
-  border: 1px solid var(--border);
-}
 
 #s1 .logo { background: var(--orange); }
 #s1 .slide-num { color: rgba(0,0,0,0.2); }
@@ -1063,19 +1034,7 @@ html, body {
   <div class="s1-bg-circle"></div>
   <div class="s1-bg-circle2"></div>
   <div class="s1-content">
-    <div class="s1-tag">✈ Crew Learning Module</div>
-    <div class="s1-title">Food <span>Safety</span></div>
-    <div class="s1-subtitle">Airline Safety &amp; Ground Operations</div>
-    <div class="s1-modules">
-      <span class="s1-mod">01 Causes of Food Poisoning</span>
-      <span class="s1-mod">02 Bacteria &amp; Growth</span>
-      <span class="s1-mod">03 High-Risk Foods</span>
-      <span class="s1-mod">04 Control Measures</span>
-      <span class="s1-mod">05 Cross-Contamination</span>
-      <span class="s1-mod">06 Personal Hygiene</span>
-      <span class="s1-mod">07 Temperature Control</span>
-      <span class="s1-mod">08 Unfit Food &amp; Reporting</span>
-    </div>
+    <div class="s1-title">Welcome to your <span>Food Safety</span> online training module</div>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num light">01 / 12</div>
@@ -1795,7 +1754,11 @@ const BUBBLE_DURATION = 6000;  // 6 s
 
 /* ── Narrations per slide (0-indexed) ────────────────────── */
 const NARRATIONS = [
-  { text: "Welcome to the easyJet Food Safety module. This training covers everything you need to handle food safely on every flight.", hint: null },
+  { lines: [
+      "Hi, I'm Jimmy — welcome to your easyJet Food Safety training module.",
+      "Over the next few minutes we'll cover the causes of food poisoning, bacteria growth, high-risk foods, temperature control, cross-contamination, personal hygiene, and what to do if food is unfit to serve.",
+      "This entire presentation — my voice, my animation, and everything you're about to see — was built solely using AI, to show how new technology can be used to develop engaging, scalable training content."
+    ], hint: null },
   { text: "You are the last line of defence. A single food poisoning incident can divert a flight and harm our passengers.", hint: null },
   { text: "Six causes of food poisoning — bacteria, viruses, chemicals, natural toxins, poor hygiene, and incorrect temperature.", hint: "👆 Click any card to flip it and see the onset time and key action." },
   { text: "Key bacteria like Salmonella, Listeria, and E. coli can cause serious harm. Know their sources.", hint: null },
@@ -1890,8 +1853,7 @@ loader.load('./character_animated.glb', (gltf) => {
 /* ── ElevenLabs TTS ──────────────────────────────────────── */
 const ELEVENLABS_MODEL    = 'eleven_multilingual_v2';
 const ELEVENLABS_ENDPOINT = 'https://api.elevenlabs.io/v1/text-to-speech';
-const audioCacheUrls = new Array(NARRATIONS.length).fill(undefined);
-const hintAudioUrls  = new Array(NARRATIONS.length).fill(undefined);
+const audioCache = new Map(); // keyed by the exact text spoken
 let currentAudio = null;
 
 async function generateSpeech(text) {
@@ -1908,19 +1870,22 @@ async function generateSpeech(text) {
   return URL.createObjectURL(await res.blob());
 }
 
+async function ensureClip(text) {
+  if (!text) return null;
+  if (audioCache.has(text)) return audioCache.get(text);
+  let url;
+  try { url = await generateSpeech(text); }
+  catch (e) { console.warn('Clip failed:', e); url = null; }
+  audioCache.set(text, url);
+  return url;
+}
+
 async function ensureAudio(i) {
-  if (audioCacheUrls[i] !== undefined) return audioCacheUrls[i];
-  try { audioCacheUrls[i] = await generateSpeech(NARRATIONS[i].text); }
-  catch (e) { console.warn(`Clip ${i} failed:`, e); audioCacheUrls[i] = null; }
-  return audioCacheUrls[i];
+  return ensureClip(NARRATIONS[i].text);
 }
 
 async function ensureHintAudio(i) {
-  if (!NARRATIONS[i].hint) return null;
-  if (hintAudioUrls[i] !== undefined) return hintAudioUrls[i];
-  try { hintAudioUrls[i] = await generateSpeech(NARRATIONS[i].hint); }
-  catch (e) { console.warn(`Hint ${i} failed:`, e); hintAudioUrls[i] = null; }
-  return hintAudioUrls[i];
+  return ensureClip(NARRATIONS[i].hint);
 }
 
 function stopAudio() {
@@ -1938,6 +1903,29 @@ function playAudio(url, onEnd) {
 }
 
 /* ── Slide trigger — narration then hint, both voiced ────── */
+let speakToken = 0;
+
+function playLineSequence(token, lines, idx) {
+  if (token !== speakToken) return; // navigated away
+  if (idx >= lines.length) {
+    bub.classList.remove('vis');
+    talking = false;
+    if (mixer && idle) xfade(idle);
+    return;
+  }
+  const text = lines[idx];
+  talking = true;
+  if (mixer && talk) xfade(talk);
+  bub.textContent = text;
+  bub.classList.add('vis');
+  updateBubble();
+
+  ensureClip(text).then(url => {
+    if (token !== speakToken) return;
+    playAudio(url, () => playLineSequence(token, lines, idx + 1));
+  });
+}
+
 window.presenterGoToSlide = function(i) {
   if (tTo) clearTimeout(tTo);
   stopAudio();
@@ -1946,8 +1934,17 @@ window.presenterGoToSlide = function(i) {
   if (mixer && idle) xfade(idle);
   const n = NARRATIONS[i];
   if (!n) return;
+  const myToken = ++speakToken;
 
   setTimeout(() => {
+    if (myToken !== speakToken) return;
+
+    if (n.lines) {
+      // Multi-paragraph sequence — each line its own bubble + audio clip
+      playLineSequence(myToken, n.lines, 0);
+      return;
+    }
+
     // Phase 1 — show narration bubble immediately, fetch + play audio
     talking = true;
     if (mixer && talk) xfade(talk);
@@ -1956,6 +1953,7 @@ window.presenterGoToSlide = function(i) {
     updateBubble();
 
     function startHint() {
+      if (myToken !== speakToken) return;
       if (!n.hint) {
         // No hint — just hide
         bub.classList.remove('vis');
@@ -1969,13 +1967,13 @@ window.presenterGoToSlide = function(i) {
       if (mixer && idle) xfade(idle);
       talking = false;
       ensureHintAudio(i).then(url => {
-        if (bub.textContent !== n.hint) return; // navigated away
+        if (myToken !== speakToken) return;
         playAudio(url, () => { bub.classList.remove('vis'); });
       });
     }
 
     ensureAudio(i).then(url => {
-      if (!talking) return;
+      if (myToken !== speakToken) return;
       playAudio(url, startHint);
       // Pre-fetch next slide's narration + hint in background
       if (i + 1 < NARRATIONS.length) {
