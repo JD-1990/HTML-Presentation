@@ -1834,7 +1834,9 @@ scene.add(fill);
 /* ── Animation state ─────────────────────────────────────── */
 const CROSSFADE_TIME = 0.35;
 let mixer, root;
-let idle1Action, idle2Action, idle3Action, wavingAction, talkAction;
+let idle1Action, idle2Action, idle3Action, wavingAction;
+let talkActions = []; // two instances of the same clip, ping-ponged to mask the loop seam
+let activeTalkIdx = 0;
 let IDLE_ACTIONS = [];
 let currentIdleIndex = 0;
 let hasWaved = false;
@@ -1870,15 +1872,29 @@ function playNextIdle() {
 function playTalk() {
   presenterState = 'talking';
   setSwayTarget(false);
-  xfade(talkAction);
+  activeTalkIdx = 0;
+  xfade(talkActions[activeTalkIdx]);
 }
 
 function onAnimFinished(e) {
   const action = e.action;
   if (action === wavingAction) { hasWaved = true; playNextIdle(); return; }
-  // talkAction loops for the duration of speech — returning to idle is
+  // Talking loops for the duration of speech — returning to idle is
   // driven explicitly by the audio 'ended' callback, not this event.
   if (IDLE_ACTIONS.includes(action) && presenterState === 'idle') { playNextIdle(); return; }
+}
+
+function onAnimLoop(e) {
+  // The Talking clip's first/last frames don't match perfectly, so an
+  // instant loop restart shows a visible pop. Mask it by crossfading into
+  // a second instance of the same clip (starting fresh at frame 0) each
+  // time the active one completes a cycle, instead of letting it restart
+  // in place.
+  if (presenterState !== 'talking' || !talkActions.includes(e.action)) return;
+  const next = talkActions[(activeTalkIdx + 1) % talkActions.length];
+  activeTalkIdx = (activeTalkIdx + 1) % talkActions.length;
+  next.reset().setEffectiveWeight(1).fadeIn(CROSSFADE_TIME).play();
+  e.action.fadeOut(CROSSFADE_TIME);
 }
 
 /* ── Load GLB ────────────────────────────────────────────── */
@@ -1892,6 +1908,7 @@ loader.load('./Valentina_final.glb', (gltf) => {
 
   mixer = new THREE.AnimationMixer(root);
   mixer.addEventListener('finished', onAnimFinished);
+  mixer.addEventListener('loop', onAnimLoop);
   const clips = gltf.animations;
   const findByName = name => clips.find(c => c.name === name);
 
@@ -1899,7 +1916,10 @@ loader.load('./Valentina_final.glb', (gltf) => {
   idle2Action  = mixer.clipAction(findByName('Idle2')  || clips[0]);
   idle3Action  = mixer.clipAction(findByName('Idle3')  || clips[0]);
   wavingAction = mixer.clipAction(findByName('Waving') || clips[0]);
-  talkAction   = mixer.clipAction(findByName('Talking') || clips[0]);
+  const talkClip = findByName('Talking') || clips[0];
+  // Two independent actions on the same clip, so we can crossfade one
+  // into the other across the loop seam instead of restarting in place.
+  talkActions = [mixer.clipAction(talkClip), mixer.clipAction(talkClip.clone())];
   IDLE_ACTIONS = [idle1Action, idle2Action, idle3Action];
 
   [...IDLE_ACTIONS, wavingAction].forEach(a => {
@@ -1908,7 +1928,7 @@ loader.load('./Valentina_final.glb', (gltf) => {
   });
   // Talking loops for as long as speech is playing — only the audio
   // 'ended' callback decides when to crossfade back to idle.
-  talkAction.setLoop(THREE.LoopRepeat);
+  talkActions.forEach(a => a.setLoop(THREE.LoopRepeat));
 
   // Wave once on first load, then settle into the idle rotation
   presenterState = 'waving';
