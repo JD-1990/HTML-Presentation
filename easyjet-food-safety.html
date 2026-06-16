@@ -1771,6 +1771,18 @@ const NARRATIONS = [
   { text: "If food is unfit: Stop, Isolate, Inform, Document, Preserve, Report. Six steps every crew member must know.", hint: "👆 Click each step to mark it complete as you memorise the procedure." }
 ];
 
+// Kick off slide 1's first lines of audio immediately on page load — before
+// the user even clicks "Begin Training" — so they're ready (or much closer
+// to ready) the moment playback starts, rather than fetching cold.
+if (NARRATIONS[0] && NARRATIONS[0].lines) {
+  // Fetch sequentially, not in parallel — concurrent ElevenLabs requests
+  // from a fresh page load can trigger 402s.
+  NARRATIONS[0].lines.slice(0, 2).reduce(
+    (p, text) => p.then(() => ensureClip(text).catch(() => {})),
+    Promise.resolve()
+  );
+}
+
 /* ── Scene setup ─────────────────────────────────────────── */
 const canvas = document.getElementById('char-canvas');
 const bub    = document.getElementById('speech-bubble');
@@ -1921,6 +1933,10 @@ function playLineSequence(token, lines, idx) {
 
   ensureClip(text).then(url => {
     if (token !== speakToken) return;
+    // Start fetching the next line's clip now, while this one plays,
+    // so it's hopefully ready by the time we need it (these are long
+    // passages and ElevenLabs synthesis can take several seconds).
+    if (idx + 1 < lines.length) ensureClip(lines[idx + 1]).catch(() => {});
     playAudio(url, () => playLineSequence(token, lines, idx + 1));
   });
 }
