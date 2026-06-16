@@ -1709,9 +1709,8 @@ html, body {
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
   });
 
-  window.addEventListener('load', () => {
-    if (window.presenterGoToSlide) window.presenterGoToSlide(0);
-  });
+  // Narration for slide 0 starts when the user clicks "Begin Training" below —
+  // triggering it here too would fire a duplicate, concurrent ElevenLabs request.
 
   // Temperature slider handled by module script
 
@@ -1870,14 +1869,14 @@ async function generateSpeech(text) {
   return URL.createObjectURL(await res.blob());
 }
 
-async function ensureClip(text) {
-  if (!text) return null;
+function ensureClip(text) {
+  if (!text) return Promise.resolve(null);
   if (audioCache.has(text)) return audioCache.get(text);
-  let url;
-  try { url = await generateSpeech(text); }
-  catch (e) { console.warn('Clip failed:', e); url = null; }
-  audioCache.set(text, url);
-  return url;
+  // Cache the in-flight promise immediately so concurrent calls for the
+  // same line reuse one request instead of firing duplicate ElevenLabs calls.
+  const promise = generateSpeech(text).catch(e => { console.warn('Clip failed:', e); return null; });
+  audioCache.set(text, promise);
+  return promise;
 }
 
 async function ensureAudio(i) {
