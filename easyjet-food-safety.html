@@ -1768,7 +1768,7 @@ const BUBBLE_DURATION = 6000;  // 6 s
 /* ── Narrations per slide (0-indexed) ────────────────────── */
 const NARRATIONS = [
   { lines: [
-      "Hi, I'm Jimmy — welcome to your easyJet Food Safety training module.",
+      "Hi, I'm Valentina — welcome to your easyJet Food Safety training module.",
       "Over the next few minutes we'll cover the causes of food poisoning, bacteria growth, high-risk foods, temperature control, cross-contamination, personal hygiene, and what to do if food is unfit to serve.",
       "This entire presentation — my voice, my animation, and everything you're about to see — was built solely using AI, to show how new technology can be used to develop engaging, scalable training content."
     ], hint: null },
@@ -1828,45 +1828,83 @@ fill.position.set(-2, 1, 2);
 scene.add(fill);
 
 /* ── Animation state ─────────────────────────────────────── */
-let mixer, idle, talk, root;
+const CROSSFADE_TIME = 0.35;
+let mixer, root;
+let idle1Action, idle2Action, idle3Action, wavingAction, talkAction;
+let IDLE_ACTIONS = [];
+let currentIdleIndex = 0;
+let hasWaved = false;
+let presenterState = 'loading'; // 'waving' | 'idle' | 'talking'
 let talking = false, tTo = null;
+let swayWeight = 0, swayTarget = 0;
 const clock = new THREE.Clock();
 
-function findClip(name) {
-  return mixer.existingAction({ name }) ||
-         mixer.clipAction(
-           mixer._actions.map(a => a.getClip()).find(c =>
-             c.name.toLowerCase().includes(name.toLowerCase())
-           ) || THREE.AnimationClip.findByName(mixer._root.animations || [], name)
-         );
-}
+function setSwayTarget(active) { swayTarget = active ? 1 : 0; }
+function resumeSway() { setSwayTarget(true); }
 
-function xfade(to, dur = 0.35) {
-  if (!mixer) return;
+function xfade(to, dur = CROSSFADE_TIME) {
+  if (!mixer || !to) return;
   mixer._actions.forEach(a => {
     if (a !== to) a.fadeOut(dur);
   });
   to.reset().setEffectiveWeight(1).fadeIn(dur).play();
 }
 
+function playNextIdle() {
+  presenterState = 'idle';
+  resumeSway();
+  let nextIndex;
+  if (Math.random() < 0.7) {
+    nextIndex = (currentIdleIndex + 1) % IDLE_ACTIONS.length;
+  } else {
+    nextIndex = Math.floor(Math.random() * IDLE_ACTIONS.length);
+  }
+  currentIdleIndex = nextIndex;
+  xfade(IDLE_ACTIONS[nextIndex]);
+}
+
+function playTalk() {
+  presenterState = 'talking';
+  setSwayTarget(false);
+  xfade(talkAction);
+}
+
+function onAnimFinished(e) {
+  const action = e.action;
+  if (action === wavingAction) { hasWaved = true; playNextIdle(); return; }
+  if (action === talkAction) { playNextIdle(); return; }
+  if (IDLE_ACTIONS.includes(action) && presenterState === 'idle') { playNextIdle(); return; }
+}
+
 /* ── Load GLB ────────────────────────────────────────────── */
 const loader = new GLTFLoader();
-loader.load('./character_animated.glb', (gltf) => {
+loader.load('./character_final.glb', (gltf) => {
   root = gltf.scene;
   root.scale.set(-CHAR_SCALE, CHAR_SCALE, CHAR_SCALE);  // mirror → faces left
   root.position.set(0, FLOOR_Y, 0);
   scene.add(root);
 
   mixer = new THREE.AnimationMixer(root);
+  mixer.addEventListener('finished', onAnimFinished);
   const clips = gltf.animations;
+  const findByName = name => clips.find(c => c.name === name);
 
-  const idleClip = clips.find(c => c.name === 'Idle') || clips[0];
-  const talkClip = clips.find(c => c.name === 'Talk') || clips[1];
+  idle1Action  = mixer.clipAction(findByName('Idle1')  || clips[0]);
+  idle2Action  = mixer.clipAction(findByName('Idle2')  || clips[0]);
+  idle3Action  = mixer.clipAction(findByName('Idle3')  || clips[0]);
+  wavingAction = mixer.clipAction(findByName('Waving') || clips[0]);
+  talkAction   = mixer.clipAction(findByName('Talking') || clips[0]);
+  IDLE_ACTIONS = [idle1Action, idle2Action, idle3Action];
 
-  idle = mixer.clipAction(idleClip);
-  talk = mixer.clipAction(talkClip);
+  [...IDLE_ACTIONS, wavingAction, talkAction].forEach(a => {
+    a.setLoop(THREE.LoopOnce);
+    a.clampWhenFinished = true;
+  });
 
-  idle.play();
+  // Wave once on first load, then settle into the idle rotation
+  presenterState = 'waving';
+  setSwayTarget(false);
+  wavingAction.reset().setEffectiveWeight(1).play();
 
   // Trigger narration for the slide that's already active
   const activeSl = document.querySelector('.slide.active');
@@ -1935,12 +1973,12 @@ function playLineSequence(token, lines, idx) {
   if (idx >= lines.length) {
     bub.classList.remove('vis');
     talking = false;
-    if (mixer && idle) xfade(idle);
+    if (mixer) playNextIdle();
     return;
   }
   const text = lines[idx];
   talking = true;
-  if (mixer && talk) xfade(talk);
+  if (mixer) playTalk();
   bub.textContent = text;
   bub.classList.add('vis');
   updateBubble();
@@ -1960,7 +1998,8 @@ window.presenterGoToSlide = function(i) {
   stopAudio();
   bub.classList.remove('vis');
   talking = false;
-  if (mixer && idle) xfade(idle);
+  // Don't interrupt the one-time wave-on-load with a slide-change reset
+  if (mixer && presenterState !== 'waving') playNextIdle();
   const n = NARRATIONS[i];
   if (!n) return;
   const myToken = ++speakToken;
@@ -1976,7 +2015,7 @@ window.presenterGoToSlide = function(i) {
 
     // Phase 1 — show narration bubble immediately, fetch + play audio
     talking = true;
-    if (mixer && talk) xfade(talk);
+    if (mixer) playTalk();
     bub.textContent = n.text;
     bub.classList.add('vis');
     updateBubble();
@@ -1987,13 +2026,13 @@ window.presenterGoToSlide = function(i) {
         // No hint — just hide
         bub.classList.remove('vis');
         talking = false;
-        if (mixer && idle) xfade(idle);
+        if (mixer) playNextIdle();
         return;
       }
       // Phase 2 — switch bubble to hint, fetch + play hint audio
       bub.textContent = n.hint;
       updateBubble();
-      if (mixer && idle) xfade(idle);
+      if (mixer) playNextIdle();
       talking = false;
       ensureHintAudio(i).then(url => {
         if (myToken !== speakToken) return;
@@ -2140,6 +2179,18 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = clock.getDelta();
   if (mixer) mixer.update(dt);
+
+  // Blend sway in/out smoothly rather than snapping it on/off
+  swayWeight += (swayTarget - swayWeight) * Math.min(1, dt * 4);
+  if (root && swayWeight > 0.001) {
+    const t = Date.now();
+    root.rotation.z = Math.sin(t * 0.00035) * 0.052 * swayWeight;
+    root.position.y = FLOOR_Y + Math.abs(Math.sin(t * 0.00035)) * 0.02 * swayWeight;
+  } else if (root) {
+    root.rotation.z = 0;
+    root.position.y = FLOOR_Y;
+  }
+
   renderer.render(scene, camera);
   drawBacteriaGraph();
 }
