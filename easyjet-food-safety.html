@@ -39,6 +39,8 @@ html, body {
 .deck {
   width: 1280px; height: 720px;
   position: relative;
+  transform-origin: center center;
+  flex-shrink: 0;
 }
 
 .slide {
@@ -1685,6 +1687,18 @@ html, body {
 </div>
 
 <script>
+  // Scale the fixed 1280×720 deck to fit any viewport (e.g. iPad) without
+  // clipping, while keeping all internal positioning/coordinates unchanged.
+  function fitDeck() {
+    const deck = document.querySelector('.deck');
+    if (!deck) return;
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1);
+    deck.style.transform = `scale(${scale})`;
+  }
+  fitDeck();
+  window.addEventListener('resize', fitDeck);
+  window.addEventListener('orientationchange', fitDeck);
+
   let cur = 0;
   const slides = document.querySelectorAll('.slide');
   const total = slides.length;
