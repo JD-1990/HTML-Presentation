@@ -1763,13 +1763,10 @@ const CW = 280, CH = 480;   // canvas px — generous size for full-body visibil
 const STAGE_W = 1280, STAGE_H = 720, CANVAS_RIGHT = 16;
 const CHAR_SCALE = 1.65;
 const FLOOR_Y    = -0.9;
-// The "Talking" clip's baked head/gaze pose points up and to the left of
-// camera — nudge the whole character to compensate. Positive yaw rotates
-// her to her own left (i.e. toward camera-right); tweak and re-test live.
-const CHAR_YAW_DEG = 12;
-// Raises the camera's look-at point to better meet her upward gaze,
-// instead of tilting her whole body (which would look unnatural).
-const CAMERA_LOOKAT_Y_OFFSET = 0.18;
+// Reset to neutral for the new Talking animation — re-tune these only if
+// her gaze still seems off-camera with the new clip.
+const CHAR_YAW_DEG = 0;
+const CAMERA_LOOKAT_Y_OFFSET = 0;
 const BUBBLE_DURATION = 6000;  // 6 s
 
 /* ── Narrations per slide (0-indexed) ────────────────────── */
@@ -1885,7 +1882,7 @@ function onAnimFinished(e) {
 
 /* ── Load GLB ────────────────────────────────────────────── */
 const loader = new GLTFLoader();
-loader.load('./character_final.glb', (gltf) => {
+loader.load('./Valentina_final.glb', (gltf) => {
   root = gltf.scene;
   root.scale.set(-CHAR_SCALE, CHAR_SCALE, CHAR_SCALE);  // mirror → faces left
   root.position.set(0, FLOOR_Y, 0);
