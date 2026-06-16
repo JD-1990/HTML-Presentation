@@ -1876,7 +1876,8 @@ function playTalk() {
 function onAnimFinished(e) {
   const action = e.action;
   if (action === wavingAction) { hasWaved = true; playNextIdle(); return; }
-  if (action === talkAction) { playNextIdle(); return; }
+  // talkAction loops for the duration of speech — returning to idle is
+  // driven explicitly by the audio 'ended' callback, not this event.
   if (IDLE_ACTIONS.includes(action) && presenterState === 'idle') { playNextIdle(); return; }
 }
 
@@ -1901,10 +1902,13 @@ loader.load('./Valentina_final.glb', (gltf) => {
   talkAction   = mixer.clipAction(findByName('Talking') || clips[0]);
   IDLE_ACTIONS = [idle1Action, idle2Action, idle3Action];
 
-  [...IDLE_ACTIONS, wavingAction, talkAction].forEach(a => {
+  [...IDLE_ACTIONS, wavingAction].forEach(a => {
     a.setLoop(THREE.LoopOnce);
     a.clampWhenFinished = true;
   });
+  // Talking loops for as long as speech is playing — only the audio
+  // 'ended' callback decides when to crossfade back to idle.
+  talkAction.setLoop(THREE.LoopRepeat);
 
   // Wave once on first load, then settle into the idle rotation
   presenterState = 'waving';
