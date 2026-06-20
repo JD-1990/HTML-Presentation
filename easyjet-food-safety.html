@@ -1108,23 +1108,26 @@ html, body {
   </div>
   <div class="s2-right">
     <div class="s2-section-label">Your Role on Every Flight</div>
-    <div class="s2-heading">Food safety is part of your day, every day.</div>
-    <div class="s2-cards">
-      <div class="s2-card">
-        <div class="s2-card-title">At Loading</div>
-        <div class="s2-card-body">Check chilled and frozen items the moment they board — temperatures, seals, and use-by dates. Reject anything that doesn't meet the standard.</div>
+    <div class="s2-heading">Key do's and don'ts for every service.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:4px;">
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px;border-bottom:2px solid var(--green);padding-bottom:6px;">✓ Do</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--green);">•</span>Check cool bags contain the correct number of ice slabs before service</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--green);">•</span>Check all food is in date, free of contaminants and suitable to serve</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--green);">•</span>Heat food to order and serve hot</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--green);">•</span>Clean as you go — wipe surfaces with antibacterial wipes throughout service</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--green);">•</span>Use paper towels to clean food contact areas and remove spillages</li>
+        </ul>
       </div>
-      <div class="s2-card">
-        <div class="s2-card-title">During Service</div>
-        <div class="s2-card-body">Keep cold food cold and hot food hot. Wash hands between tasks and keep raw and ready-to-eat items apart in the trolley.</div>
-      </div>
-      <div class="s2-card">
-        <div class="s2-card-title">Good Daily Habits</div>
-        <div class="s2-card-body">Clean as you go, never work while unwell, and follow the galley SOPs every time. Small habits, repeated every flight, protect every passenger.</div>
-      </div>
-      <div class="s2-card">
-        <div class="s2-card-title">If Something's Wrong</div>
-        <div class="s2-card-body">Spotted a temperature breach or a complaint? Stop, isolate the item, and tell your Senior Cabin Crew Member straight away.</div>
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);margin-bottom:10px;border-bottom:2px solid var(--red);padding-bottom:6px;">✗ Don't</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--red);">•</span>Sell or serve food from a cool bag if the required ice slabs are not present</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--red);">•</span>Reheat products that have already been heated and allowed to cool</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--red);">•</span>Leave cool bags open when not in use or store contents outside a cool bag</li>
+          <li style="font-size:12px;font-weight:600;color:var(--navy);padding-left:14px;position:relative;line-height:1.35;"><span style="position:absolute;left:0;color:var(--red);">•</span>Handle unwrapped food or ice — food equipment must only be used for food</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -1548,7 +1551,7 @@ html, body {
     <div class="ctrl-card" onclick="this.classList.toggle('done')">
       <div class="ctrl-num">1</div>
       <div class="ctrl-title">Check on Loading</div>
-      <div class="ctrl-body">Confirm chilled items are ≤5°C and frozen items are solid at the door. Check seals and use-by dates. Reject anything that fails before it boards.</div>
+      <div class="ctrl-body">Confirm cool bags contain the correct number of ice slabs (2 slabs, or 3 for French bases). Check seals and use-by dates. Do not serve food if ice slabs are missing.</div>
       <div class="ctrl-check">✅</div>
     </div>
     <div class="ctrl-card" onclick="this.classList.toggle('done')">
@@ -1768,7 +1771,7 @@ html, body {
       <div class="s12-col-label">Food Safety Reporting Procedure</div>
       <div class="procedure-steps">
         <div class="proc-step" onclick="toggleProcStep(this)"><div class="proc-num n1">1</div><div class="proc-keyword">REMOVE</div><div class="proc-body">Take the item out of service immediately. Do not discard it — it is needed for investigation.</div><div class="proc-done-mark">✅</div></div>
-        <div class="proc-step" onclick="toggleProcStep(this)"><div class="proc-num n2">2</div><div class="proc-keyword">INFORM</div><div class="proc-body">Tell your Senior Cabin Crew Member straight away. For a customer complaint, take the passenger's details.</div><div class="proc-done-mark">✅</div></div>
+        <div class="proc-step" onclick="toggleProcStep(this)"><div class="proc-num n2">2</div><div class="proc-keyword">INFORM</div><div class="proc-body">Tell your Cabin Manager straight away. For a customer complaint, take the passenger's details.</div><div class="proc-done-mark">✅</div></div>
         <div class="proc-step" onclick="toggleProcStep(this)"><div class="proc-num n3">3</div><div class="proc-keyword">SAMPLE</div><div class="proc-body">Place the item and completed paperwork into the easyJet sample bag and seal it securely.</div><div class="proc-done-mark">✅</div></div>
         <div class="proc-step" onclick="toggleProcStep(this)"><div class="proc-num n4">4</div><div class="proc-keyword">STORE</div><div class="proc-body">Fresh food: place sealed bag in an empty cool bag and attach a green sample label. Ambient bistro product: place sealed bag in cart 4.</div><div class="proc-done-mark">✅</div></div>
         <div class="proc-step" onclick="toggleProcStep(this)"><div class="proc-num n5">5</div><div class="proc-keyword">CSR/ASR</div><div class="proc-body">Complete a Customer or Crew Service Report at the end of duty. Attach photo images where possible.</div><div class="proc-done-mark">✅</div></div>
