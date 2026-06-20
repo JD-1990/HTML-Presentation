@@ -88,10 +88,10 @@ html, body {
 .slide-num.light { color: rgba(255,255,255,0.25); }
 
 /* ── Character safe zone ─────────────────────────────────────
-   Reserve the rightmost 220 px of every slide for the character.
-   box-sizing: border-box means the 1280 px width stays fixed and
-   all child flex / grid layouts simply shrink their usable width. */
-.slide { padding-right: 310px; box-sizing: border-box; }
+   Reserve the rightmost 310 px for the character and 68 px at the
+   bottom for the logo and competency strip. box-sizing: border-box
+   keeps the 1280×720 px frame fixed. */
+.slide { padding-right: 310px; padding-bottom: 68px; box-sizing: border-box; }
 
 /* ── 3-D Presenter canvas ──────────────────────────────────── */
 #char-canvas {
