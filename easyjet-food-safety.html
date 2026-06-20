@@ -64,7 +64,7 @@ html, body {
 /* logo — every slide */
 .logo {
   position: absolute;
-  bottom: 28px; left: 36px;
+  top: 12px; right: 36px;
   background: var(--orange);
   color: var(--white);
   font-size: 13px;
@@ -78,7 +78,7 @@ html, body {
 /* slide number */
 .slide-num {
   position: absolute;
-  bottom: 32px; right: 36px;
+  bottom: 12px; right: 36px;
   font-size: 12px;
   font-weight: 700;
   color: rgba(0,0,0,0.2);
@@ -88,10 +88,11 @@ html, body {
 .slide-num.light { color: rgba(255,255,255,0.25); }
 
 /* ── Character safe zone ─────────────────────────────────────
-   Reserve the rightmost 310 px for the character and 68 px at the
-   bottom for the logo and competency strip. box-sizing: border-box
-   keeps the 1280×720 px frame fixed. */
-.slide { padding-right: 310px; padding-bottom: 68px; box-sizing: border-box; }
+   Reserve the rightmost 310 px for the character. The top 46 px
+   is kept clear for the logo (top-right) and competency strip
+   (top-centre). box-sizing: border-box keeps the 1280×720 px frame
+   fixed. */
+.slide { padding-right: 310px; padding-top: 46px; padding-bottom: 20px; box-sizing: border-box; }
 
 /* ── 3-D Presenter canvas ──────────────────────────────────── */
 #char-canvas {
@@ -814,7 +815,7 @@ html, body {
 /* ── Competency matrix strip ───────────────────────────────── */
 .comp-strip {
   position: absolute;
-  bottom: 24px; left: 50%; transform: translateX(-50%);
+  top: 12px; left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: 8px;
   white-space: nowrap; z-index: 10;
 }
@@ -1139,7 +1140,7 @@ html, body {
 <!-- ══ SLIDE 3 — 6 Causes ══ -->
 <div class="slide" id="s3">
   <div class="topbar"></div>
-  <div class="std-header" style="padding-top:48px;">
+  <div class="std-header" style="padding-top:10px;">
     <div class="std-eyebrow">Module 01</div>
     <div class="std-title">The Main Causes of Food Poisoning</div>
   </div>
@@ -1242,7 +1243,7 @@ html, body {
 <!-- ══ SLIDE 4 — Bacteria Table ══ -->
 <div class="slide" id="s4">
   <div class="topbar"></div>
-  <div class="s4-header" style="padding-top:52px;">
+  <div class="s4-header" style="padding-top:10px;">
     <div class="s4-eyebrow">Module 02</div>
     <div class="s4-title">Know the Bugs and How to Stop Them On Board</div>
   </div>
@@ -1282,7 +1283,7 @@ html, body {
 <!-- ══ SLIDE 5 — F-A-T-T-O-M ══ -->
 <div class="slide" id="s5">
   <div class="topbar"></div>
-  <div class="std-header" style="padding-top:48px;">
+  <div class="std-header" style="padding-top:10px;">
     <div class="std-eyebrow">Module 02: Bacterial Growth</div>
     <div class="std-title">What bacteria need to multiply: <span style="color:var(--orange)">F-A-T-T-O-M</span></div>
   </div>
@@ -1445,7 +1446,7 @@ html, body {
 <!-- ══ SLIDE 7 — High-Risk Foods ══ -->
 <div class="slide" id="s7">
   <div class="topbar"></div>
-  <div class="std-header" style="padding-top:48px;">
+  <div class="std-header" style="padding-top:10px;">
     <div class="std-eyebrow">Module 03</div>
     <div class="std-title">High-Risk Foods in Airline Catering</div>
   </div>
@@ -1543,7 +1544,7 @@ html, body {
 <!-- ══ SLIDE 8 — Control Measures ══ -->
 <div class="slide" id="s8">
   <div class="topbar"></div>
-  <div class="std-header" style="padding-top:44px;">
+  <div class="std-header" style="padding-top:10px;">
     <div class="std-eyebrow">Module 04</div>
     <div class="std-title">Your Six Control Measures, Every Flight</div>
   </div>
@@ -1599,7 +1600,7 @@ html, body {
 <!-- ══ SLIDE 9 — Cross-Contamination ══ -->
 <div class="slide" id="s9">
   <div class="topbar"></div>
-  <div class="s9-header" style="padding-top:44px;">
+  <div class="s9-header" style="padding-top:10px;">
     <div class="s9-eyebrow">Module 05</div>
     <div class="s9-title">Cross-Contamination &amp; Prevention</div>
   </div>
@@ -1704,7 +1705,7 @@ html, body {
 <!-- ══ SLIDE 11 — Temperature Control Table ══ -->
 <div class="slide" id="s11">
   <div class="topbar"></div>
-  <div class="std-header" style="padding-top:44px;">
+  <div class="std-header" style="padding-top:10px;">
     <div class="std-eyebrow">Module 07</div>
     <div class="std-title">Temperature Control: Requirements and Actions</div>
   </div>
@@ -1773,7 +1774,7 @@ html, body {
 <!-- ══ SLIDE 12 — Unfit Food & Key Messages ══ -->
 <div class="slide" id="s12">
   <div class="topbar"></div>
-  <div class="s12-header" style="padding-top:44px;">
+  <div class="s12-header" style="padding-top:10px;">
     <div class="s12-eyebrow">Module 08 — Completing the Module</div>
     <div class="s12-title">Food Safety Reporting &amp; Key Messages</div>
   </div>
