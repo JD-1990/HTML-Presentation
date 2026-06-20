@@ -811,6 +811,31 @@ html, body {
   color: var(--orange); margin-bottom: 12px;
 }
 
+/* ── Reflection prompts (non-interactive slides) ──────────── */
+.reflect {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(13,34,64,0.05);
+  border-left: 4px solid var(--navy);
+  border-radius: 4px;
+  padding: 12px 18px;
+}
+.reflect-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
+.reflect-label {
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 3px;
+}
+.reflect-q {
+  font-size: 14px; font-weight: 700;
+  color: var(--navy); line-height: 1.35;
+}
+.reflect.on-dark {
+  background: rgba(255,255,255,0.12);
+  border-left-color: rgba(255,255,255,0.65);
+}
+.reflect.on-dark .reflect-label { color: rgba(255,255,255,0.7); }
+.reflect.on-dark .reflect-q { color: var(--white); }
+
 /* ── Flip cards ───────────────────────────────────────────── */
 .flip-wrap {
   perspective: 900px;
@@ -1048,6 +1073,13 @@ html, body {
     <div class="s2-eyebrow">Why it matters</div>
     <div class="s2-big">You are the last line of defence.</div>
     <div class="s2-quote">Between catering loading and the passenger's tray, you are the only person checking that food is safe. The habits you keep on every flight are what prevent illness on board.</div>
+    <div class="reflect on-dark" style="margin-top:28px;">
+      <span class="reflect-icon">💭</span>
+      <div>
+        <div class="reflect-label">Think about it</div>
+        <div class="reflect-q">On your last flight, how many moments depended on a food-safety decision only you could make?</div>
+      </div>
+    </div>
   </div>
   <div class="s2-right">
     <div class="s2-section-label">Your Role on Every Flight</div>
@@ -1197,6 +1229,13 @@ html, body {
       <tr><td>Bacillus cereus</td><td>Rice, pasta, cereals — spores survive cooking</td><td>Keep chilled; never reheat rice more than once</td></tr>
     </tbody>
   </table>
+  <div class="reflect" style="margin:24px 72px 0;">
+    <span class="reflect-icon">💭</span>
+    <div>
+      <div class="reflect-label">Think about it</div>
+      <div class="reflect-q">Which of these bugs are you most likely to meet on a typical service — and would you spot the risk in time?</div>
+    </div>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num light">04 / 12</div>
 </div>
@@ -1537,6 +1576,13 @@ html, body {
       <div class="s-block-desc">Wash hands between handling different food types</div>
     </div>
   </div>
+  <div class="reflect" style="margin:20px 80px 0;">
+    <span class="reflect-icon">💭</span>
+    <div>
+      <div class="reflect-label">Think about it</div>
+      <div class="reflect-q">In a busy trolley service, where is raw most likely to meet ready-to-eat — and what stops it?</div>
+    </div>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num light">09 / 12</div>
 </div>
@@ -1568,6 +1614,13 @@ html, body {
       <div class="hw-step"><div class="hw-num">6</div><div class="hw-label">Rinse &amp; Dry</div></div>
     </div>
     <div class="handwash-note">Dry with a single-use paper towel. Wash hands: before food handling · after using the toilet · after touching raw food · after handling waste · after coughing or sneezing · after touching your face.</div>
+    <div class="reflect" style="margin-top:20px;">
+      <span class="reflect-icon">💭</span>
+      <div>
+        <div class="reflect-label">Think about it</div>
+        <div class="reflect-q">Be honest — on a tight turnaround, when is handwashing most likely to slip, and what could you change?</div>
+      </div>
+    </div>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">10 / 12</div>
@@ -1625,6 +1678,13 @@ html, body {
     </table>
   </div>
   <div class="s11-golden">Golden Rule: When in doubt, throw it out. Never take risks with temperature-abused food — passenger safety is paramount.</div>
+  <div class="reflect" style="margin:14px 80px 0;">
+    <span class="reflect-icon">💭</span>
+    <div>
+      <div class="reflect-label">Think about it</div>
+      <div class="reflect-q">A chilled meal reads 8°C at loading. What's your next move — and who do you tell?</div>
+    </div>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">11 / 12</div>
 </div>
