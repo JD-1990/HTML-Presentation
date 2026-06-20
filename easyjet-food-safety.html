@@ -811,6 +811,29 @@ html, body {
   color: var(--orange); margin-bottom: 12px;
 }
 
+/* ── Competency matrix strip ───────────────────────────────── */
+.comp-strip {
+  position: absolute;
+  bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap; z-index: 10;
+}
+.comp-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
+  margin-right: 2px;
+}
+.comp-badge {
+  font-size: 9px; font-weight: 900; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--navy); color: var(--white);
+  padding: 3px 9px; border-radius: 3px;
+}
+.comp-badge span {
+  font-weight: 400; opacity: 0.7;
+  margin-left: 5px; font-size: 8.5px;
+}
+
 /* ── Reflection prompts (non-interactive slides) ──────────── */
 .reflect {
   display: flex; align-items: center; gap: 14px;
@@ -1103,6 +1126,12 @@ html, body {
       </div>
     </div>
   </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">WLM<span>Plans &amp; prioritises tasks</span></span>
+    <span class="comp-badge">MOC<span>Proactive during turnarounds</span></span>
+    <span class="comp-badge">APK<span>Follows SOPs</span></span>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">02 / 12</div>
 </div>
@@ -1201,6 +1230,11 @@ html, body {
     </div>
   </div>
   <div class="s3-footer">If a passenger reports nausea, vomiting, diarrhoea, or stomach pain after a meal, treat it as a possible food complaint — isolate the item and follow the reporting procedure.</div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">KNO<span>Required knowledge of legislation</span></span>
+    <span class="comp-badge">SAW<span>Anticipates threats &amp; mitigates</span></span>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">03 / 12</div>
 </div>
@@ -1235,6 +1269,11 @@ html, body {
       <div class="reflect-label">Think about it</div>
       <div class="reflect-q">Which of these bugs are you most likely to meet on a typical service — and would you spot the risk in time?</div>
     </div>
+  </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">KNO<span>Able to apply knowledge effectively</span></span>
+    <span class="comp-badge">SAW<span>Aware of potential future conditions</span></span>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num light">04 / 12</div>
@@ -1328,6 +1367,11 @@ html, body {
     </div>
   </div>
   <div class="fattom-sub">Remove any one of these conditions and bacterial growth is severely limited. <strong>Temperature and time are the ones crew control directly.</strong></div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">KNO<span>Demonstrates required knowledge of SOPs</span></span>
+    <span class="comp-badge">APK<span>Safely manages cabin environment</span></span>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">05 / 12</div>
 </div>
@@ -1387,6 +1431,12 @@ html, body {
         <div id="graph-desc" style="background:var(--surface);border-radius:0 0 6px 6px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--muted);border-top:1px solid var(--border);">At 37°C bacteria double every 20 minutes — a single cell becomes millions within hours.</div>
       </div>
     </div>
+  </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">SAW<span>Keeps track of time &amp; intended goals</span></span>
+    <span class="comp-badge">PSD<span>Anticipates &amp; manages risk effectively</span></span>
+    <span class="comp-badge">APK<span>Safely manages cabin environment</span></span>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">06 / 12</div>
@@ -1480,6 +1530,12 @@ html, body {
     </div>
   </div>
   <div class="s7-alert">High-risk foods must NEVER be left at ambient temperature for more than 2 hours. Cold items below 5°C — hot items above 63°C.</div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">APK<span>Follows SOPs; references operating manuals</span></span>
+    <span class="comp-badge">KNO<span>Demonstrates required knowledge</span></span>
+    <span class="comp-badge">MOC<span>Completes service to suit customers</span></span>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">07 / 12</div>
 </div>
@@ -1528,6 +1584,12 @@ html, body {
       <div class="ctrl-body">Bag and secure all food waste. Never re-use or re-serve leftovers from a completed flight. Dispose per aircraft waste regulations.</div>
       <div class="ctrl-check">✅</div>
     </div>
+  </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">WLM<span>Plans tasks; ensures completion</span></span>
+    <span class="comp-badge">APK<span>Correctly uses systems &amp; equipment</span></span>
+    <span class="comp-badge">MOC<span>Proactive during turnarounds</span></span>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">08 / 12</div>
@@ -1583,6 +1645,12 @@ html, body {
       <div class="reflect-q">In a busy trolley service, where is raw most likely to meet ready-to-eat — and what stops it?</div>
     </div>
   </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">SAW<span>Anticipates threats &amp; plans mitigations</span></span>
+    <span class="comp-badge">APK<span>Follows SOPs; safely manages environment</span></span>
+    <span class="comp-badge">MOC<span>Creates a safe cabin for crew &amp; customers</span></span>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num light">09 / 12</div>
 </div>
@@ -1621,6 +1689,12 @@ html, body {
         <div class="reflect-q">Be honest — on a tight turnaround, when is handwashing most likely to slip, and what could you change?</div>
       </div>
     </div>
+  </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">APK<span>Follows SOPs without exception</span></span>
+    <span class="comp-badge">KNO<span>Required knowledge of legislation</span></span>
+    <span class="comp-badge">MOC<span>Contributes to a positive, safe atmosphere</span></span>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">10 / 12</div>
@@ -1685,6 +1759,12 @@ html, body {
       <div class="reflect-q">A chilled meal reads 8°C at loading. What's your next move — and who do you tell?</div>
     </div>
   </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">SAW<span>Keeps track of time &amp; intended goals</span></span>
+    <span class="comp-badge">PSD<span>Uses appropriate decision-making processes</span></span>
+    <span class="comp-badge">APK<span>Safely manages the cabin environment</span></span>
+  </div>
   <div class="logo">easyJet</div>
   <div class="slide-num">11 / 12</div>
 </div>
@@ -1719,6 +1799,12 @@ html, body {
         <div class="key-msg"><div class="key-msg-icon">📋</div><div class="key-msg-text"><strong>Follow procedures.</strong> SOPs exist to protect passengers and crew. Know them. Follow them. Every flight.</div></div>
       </div>
     </div>
+  </div>
+  <div class="comp-strip">
+    <span class="comp-label">Competencies</span>
+    <span class="comp-badge">PSD<span>Perseveres without compromising safety</span></span>
+    <span class="comp-badge">COM<span>Prioritises who &amp; how to communicate</span></span>
+    <span class="comp-badge">APK<span>References operating manuals in a timely manner</span></span>
   </div>
   <div class="logo">easyJet</div>
   <div class="slide-num light">12 / 12</div>
